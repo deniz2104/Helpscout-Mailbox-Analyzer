@@ -2,7 +2,6 @@ from typing import Optional
 from core_system import CoreSystem
 import config
 from datetime import datetime
-from pprint import pprint
     
 class HelpScoutMailboxConversations:
     def __init__(self, client_id: str, client_secret: str):
@@ -82,7 +81,7 @@ class HelpScoutMailboxConversations:
             self._print_conversation_details(i, conv)
 
 def main():
-    client = HelpScoutClient(config.CLIENT_ID, config.CLIENT_SECRET)
+    client = HelpScoutMailboxConversations(config.CLIENT_ID, config.CLIENT_SECRET)
     page=1
     while True:
         conversations_data = client.get_mailbox(page_number=page)

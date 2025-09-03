@@ -13,3 +13,4 @@ THEMES_TAGS = ["neve","hestia","fse","jaxon","raft","zelle","fork","zerif","rive
 WORDPRESS_TICKETS_TAGS = "wporg"
 SHOP_TAGS = ["shop-isle-pro","shopisle-pro"]
 PAYMENT = "optionistics"
+KEYWORDS = ["pro", "plugin", "theme", "fse", "wp", "themes"]

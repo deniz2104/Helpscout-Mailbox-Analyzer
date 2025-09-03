@@ -55,7 +55,6 @@ class ManageTags:
                     match_type = tags_match(hs_tag, config_tag)
 
                     if match_type:
-                        print(hs_tag, "->", config_tag, f"({category})")
                         results[category].append(hs_tag)
                         categorized = True
                         break
@@ -65,10 +64,49 @@ class ManageTags:
         
         return results
 
+    def categorize_pro_versions(self, results):
+        new_results = {
+            'pro_plugins': [],
+            'free_plugins': [],
+            'pro_themes': [],
+            'free_themes': []
+        }
+        
+        def contains_pro(tag):
+            return 'pro' in tag.lower()
+        
+        for plugin_tag in results.get('plugins_tags', []):
+            if contains_pro(plugin_tag):
+                new_results['pro_plugins'].append(plugin_tag)
+            else:
+                new_results['free_plugins'].append(plugin_tag)
+
+        for theme_tag in results.get('themes_tags', []):
+            if contains_pro(theme_tag):
+                new_results['pro_themes'].append(theme_tag)
+            else:
+                new_results['free_themes'].append(theme_tag)
+
+        return new_results
+
+    def categorize_final_themes_and_plugins(self, results):
+        def contains_keywords(tag):
+            return any(keyword in tag.lower() for keyword in config.KEYWORDS)
+
+        ## make this as a template
+        for plugin_tag in results.get('free_plugins', []):
+            if not contains_keywords(plugin_tag):
+                results['free_plugins'].remove(plugin_tag)
+
 def main():
     tag_manager = ManageTags(config.CLIENT_ID, config.CLIENT_SECRET)
 
     results = tag_manager.categorize_helpscout_tags()
+    
+    pro_results = tag_manager.categorize_pro_versions(results)
 
+    tag_manager.categorize_final_themes_and_plugins(pro_results)
+    
+    print(pro_results)
 if __name__ == "__main__":
     main()
