@@ -1,6 +1,7 @@
 from core_system import CoreSystem
 import config
 from pprint import pprint
+
 class ManageTags:
     def __init__(self,client_id,client_secret):
         self.core_system_helper = CoreSystem(client_id,client_secret)
