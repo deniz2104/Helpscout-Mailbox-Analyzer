@@ -1,0 +1,6 @@
+"""
+Requirements needed for the project set via pip.
+Command: pip install -r requirements.txt
+"""
+
+requests == 2.32.5
