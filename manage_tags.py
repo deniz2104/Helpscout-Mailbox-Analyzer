@@ -1,6 +1,6 @@
+from pprint import pprint
 from core_system import CoreSystem
 import config
-from pprint import pprint
 
 class ManageTags:
     def __init__(self,client_id,client_secret):
@@ -41,8 +41,8 @@ class ManageTags:
         def tags_match(helpscout_tag, config_tag):
             hs_tag = helpscout_tag.lower()
             cfg_tag = config_tag.lower()
-            
-            if (cfg_tag in hs_tag or hs_tag in cfg_tag) or (hs_tag == cfg_tag):
+
+            if (cfg_tag in hs_tag and hs_tag.startswith(cfg_tag)) or (hs_tag == cfg_tag):
                 return True
             
             return None
@@ -55,6 +55,7 @@ class ManageTags:
                     match_type = tags_match(hs_tag, config_tag)
 
                     if match_type:
+                        print(hs_tag, "->", config_tag, f"({category})")
                         results[category].append(hs_tag)
                         categorized = True
                         break
@@ -64,12 +65,10 @@ class ManageTags:
         
         return results
 
-
 def main():
     tag_manager = ManageTags(config.CLIENT_ID, config.CLIENT_SECRET)
-    categorized_tags = tag_manager.categorize_helpscout_tags()
-    pprint(categorized_tags)
 
+    results = tag_manager.categorize_helpscout_tags()
 
 if __name__ == "__main__":
     main()
