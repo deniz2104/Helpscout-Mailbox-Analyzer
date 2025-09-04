@@ -1,3 +1,4 @@
+import csv
 from typing import Optional
 from core_system import CoreSystem
 import config
@@ -22,20 +23,29 @@ class HelpScoutMailboxConversations:
 
     def _convert_creation_date(self, creation_date) -> str:
         return datetime.fromisoformat(str(creation_date)).strftime("%Y-%m-%d")
-
-    def _filter_conversations_by_date(self, conversations: dict, start_date: str, end_date: str) -> dict:
-        filtered_conversations = {}
-        for conv_id, creation_date in conversations.items():
-            if start_date <= self._convert_creation_date(creation_date) <= end_date:
-                filtered_conversations[conv_id] = creation_date
-            else: continue
-        return filtered_conversations
+    
+    def _is_in_specified_date_range(self, creation_date: str, start_date: str, end_date: str) -> bool:
+        if not creation_date:
+            return False
+        
+        conv_date = self._convert_creation_date(creation_date)
+        return start_date <= conv_date <= end_date
+    
+    def export_to_csv(self, conversations : dict, file_path: str,start_date,end_date, write_header: bool = False) -> None:
+        mode = 'w' if write_header else 'a'
+        with open(file_path, mode, newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            if write_header:
+                writer.writerow(['Conversation ID', 'Creation Date'])
+            for conversation_id, creation_date in conversations.items():
+                if self._is_in_specified_date_range(creation_date, start_date, end_date):
+                    writer.writerow([conversation_id, self._convert_creation_date(creation_date)])
 
     def analyze_last_month_conversations(self):
         start_date, end_date = get_last_month_dates()
         
         page = 1
-        all_filtered_conversations = {}
+        first_page = True
 
         while True:
             conversations_data = self.get_mailbox(page_number=page)
@@ -47,34 +57,36 @@ class HelpScoutMailboxConversations:
             if not conversations:
                 break
 
+            first_conversation_date = self._get_creation_date(conversations[0]['id'])
+            if first_conversation_date:
+                first_date = self._convert_creation_date(first_conversation_date)
+                if first_date >= end_date:
+                    print(f"Page {page}: Skipping - conversations too new (newest: {first_date} > {end_date})")
+                    page += 1
+                    continue
+
+            last_conversation_date = self._get_creation_date(conversations[-1]['id'])
+            if last_conversation_date:
+                last_date = self._convert_creation_date(last_conversation_date)
+                if last_date <= start_date:
+                    print(f"Page {page}: Stopping - conversations too old (oldest: {last_date} < {start_date})")
+                    break
+
             new_conversation = {}
             for conv in conversations:
                 conv_id = conv['id']
                 creation_date = self._get_creation_date(conv_id)
-
                 new_conversation[conv_id] = creation_date
 
-            filtered_conversations = self._filter_conversations_by_date(new_conversation, start_date, end_date)
-
-            all_filtered_conversations.update(filtered_conversations)
-
-            if not filtered_conversations and conversations:
-                last_conv_date = self._get_creation_date(conversations[-1]['id'])
-                if last_conv_date:
-                    last_date = self._convert_creation_date(last_conv_date)
-                    if last_date < start_date:
-                        break
-
+            self.export_to_csv(new_conversation,"filtered_conversations.csv", start_date, end_date, write_header=first_page)
+            first_page = False
             page += 1
-        
-        return all_filtered_conversations
-
 
 def main():
     client = HelpScoutMailboxConversations(config.CLIENT_ID, config.CLIENT_SECRET)
 
     start_time = time.time()
-    conversations_dict = client.analyze_last_month_conversations()
+    client.analyze_last_month_conversations()
     end_time = time.time()
     print(f"Time taken: {end_time - start_time:.2f} seconds")
 
