@@ -1,7 +1,9 @@
 from typing import Optional
 from core_system import CoreSystem
 import config
+import time
 from datetime import datetime
+from get_last_month_dates import get_last_month_dates
     
 class HelpScoutMailboxConversations:
     def __init__(self, client_id: str, client_secret: str):
@@ -18,75 +20,63 @@ class HelpScoutMailboxConversations:
         conversation_data = self.core_system_helper.make_request(f"conversations/{conversation_id}")
         return conversation_data.get('createdAt') if conversation_data else None
 
-    def _get_conversation_tags(self, conversation_id) -> list[dict[str, str]]:
-        conversation_data = self.core_system_helper.make_request(f"conversations/{conversation_id}")
-        return conversation_data.get('tags', []) if conversation_data else []
+    def _convert_creation_date(self, creation_date) -> str:
+        return datetime.fromisoformat(str(creation_date)).strftime("%Y-%m-%d")
 
-    def _preprocess_tags(self, conversation_id) -> list[str]:
-        tag_list = self._get_conversation_tags(conversation_id)
-        return [tag['tag'] for tag in tag_list]
+    def _filter_conversations_by_date(self, conversations: dict, start_date: str, end_date: str) -> dict:
+        filtered_conversations = {}
+        for conv_id, creation_date in conversations.items():
+            if start_date <= self._convert_creation_date(creation_date) <= end_date:
+                filtered_conversations[conv_id] = creation_date
+            else: continue
+        return filtered_conversations
 
-    def _get_conversation_threads(self, conversation_id) -> Optional[dict]:
-        return self.core_system_helper.make_request(f"conversations/{conversation_id}/threads")
-
-    def _convert_creation_date(self, creation_date) -> Optional[str]:
-        return datetime.fromisoformat(str(creation_date)).strftime("%Y-%m-%d") if creation_date else None
-
-    def _get_staff_responses(self, conversation_id) -> dict[str, int]:
-        threads_data = self._get_conversation_threads(conversation_id)
-        staff_counts :dict[str,int] = {}
+    def analyze_last_month_conversations(self):
+        start_date, end_date = get_last_month_dates()
         
-        if not threads_data or '_embedded' not in threads_data:
-            return staff_counts
+        page = 1
+        all_filtered_conversations = {}
+
+        while True:
+            conversations_data = self.get_mailbox(page_number=page)
             
-        for thread in threads_data['_embedded']['threads']:
-            created_by = thread.get('createdBy', {})
-            if created_by.get('type') == 'user' and created_by.get('id', 0):
-                staff_name = f"{created_by.get('first', '')} {created_by.get('last', '')}".strip()
+            if not conversations_data or '_embedded' not in conversations_data:
+                break
                 
-                if staff_name and staff_name != "Help Scout" and staff_name != "Buddy (Themeisle)":
-                    staff_counts[staff_name] = staff_counts.get(staff_name, 0) + 1
+            conversations = conversations_data['_embedded']['conversations']
+            if not conversations:
+                break
 
-        return staff_counts
-    
-    def _print_conversation_details(self, i, conv):
-        print(f"#{i} - Conversation #{conv['number']} | Status: {conv['status'].upper()}")
-        print(f"Subject: {conv['subject'][:60]}...")
-        
-        staff_counts = self._get_staff_responses(conv['id'])
-        creation_date = self._convert_creation_date(self._get_creation_date(conv['id']))
-        tags = self._preprocess_tags(conv['id'])
-        
-        if staff_counts:
-            staff_list = [f"{staff} ({count} replies)" for staff, count in staff_counts.items()]
-            print(f"Staff who responded: {', '.join(staff_list)}")
-            print(f"Created At: {creation_date if creation_date else 'N/A'}")
-            print(f"Tags: {', '.join(tags) if tags else 'No tags'}")
-        else:
-            print("Staff who responded: No staff responses yet")
-        
-        print("-" * 80)
-        return staff_counts
+            new_conversation = {}
+            for conv in conversations:
+                conv_id = conv['id']
+                creation_date = self._get_creation_date(conv_id)
 
-    def analyze_conversations(self, conversations_data):
-        if not conversations_data or '_embedded' not in conversations_data:
-            print("No conversation data found")
-            return
-        
-        conversations = conversations_data['_embedded']['conversations']
-        
-        print("=== WHO RESPONDED TO CONVERSATIONS ===")
+                new_conversation[conv_id] = creation_date
 
-        for i, conv in enumerate(conversations, 1):
-            self._print_conversation_details(i, conv)
+            filtered_conversations = self._filter_conversations_by_date(new_conversation, start_date, end_date)
+
+            all_filtered_conversations.update(filtered_conversations)
+
+            if not filtered_conversations and conversations:
+                last_conv_date = self._get_creation_date(conversations[-1]['id'])
+                if last_conv_date:
+                    last_date = self._convert_creation_date(last_conv_date)
+                    if last_date < start_date:
+                        break
+
+            page += 1
+        
+        return all_filtered_conversations
+
 
 def main():
     client = HelpScoutMailboxConversations(config.CLIENT_ID, config.CLIENT_SECRET)
-    page=1
-    while True:
-        conversations_data = client.get_mailbox(page_number=page)
-        client.analyze_conversations(conversations_data)
-        page += 1
+
+    start_time = time.time()
+    conversations_dict = client.analyze_last_month_conversations()
+    end_time = time.time()
+    print(f"Time taken: {end_time - start_time:.2f} seconds")
 
 if __name__ == "__main__":
     main()
