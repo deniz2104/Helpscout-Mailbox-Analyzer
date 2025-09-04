@@ -17,7 +17,7 @@ class HelpScoutMailboxConversations:
             "page": page_number
         })
 
-    def _get_creation_date(self, conversation_id) -> Optional[str]:
+    def get_creation_date(self, conversation_id) -> Optional[str]:
         conversation_data = self.core_system_helper.make_request(f"conversations/{conversation_id}")
         return conversation_data.get('createdAt') if conversation_data else None
 
@@ -57,18 +57,19 @@ class HelpScoutMailboxConversations:
             if not conversations:
                 break
 
-            first_conversation_date = self._get_creation_date(conversations[0]['id'])
+            first_conversation_date = self.get_creation_date(conversations[0]['id'])
             if first_conversation_date:
                 first_date = self._convert_creation_date(first_conversation_date)
-                if first_date >= end_date:
+                if first_date > end_date:
                     page += 1
                     continue
 
-            last_conversation_date = self._get_creation_date(conversations[-1]['id'])
+            last_conversation_date = self.get_creation_date(conversations[-1]['id'])
             if last_conversation_date:
                 last_date = self._convert_creation_date(last_conversation_date)
-                if last_date <= start_date:
+                if last_date < start_date:
                     break
+            
             list_of_ids = [conv['id'] for conv in conversations]
             self.export_list_to_csv(list_of_ids, "filtered_conversations.csv", write_header=first_page)
 
@@ -78,10 +79,7 @@ class HelpScoutMailboxConversations:
 def main():
     client = HelpScoutMailboxConversations(config.CLIENT_ID, config.CLIENT_SECRET)
 
-    start_time = time.time()
     client.analyze_last_month_conversations()
-    end_time = time.time()
-    print(f"Time taken: {end_time - start_time:.2f} seconds")
-
+    
 if __name__ == "__main__":
     main()
