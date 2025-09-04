@@ -27,14 +27,12 @@ class ManageTags:
         config_categories = {
             'plugins_tags': config.PLUGINS_TAGS,
             'themes_tags': config.THEMES_TAGS,
-            'shop_tickets_tags': config.SHOP_TAGS
         }
         
         results = {
             'plugins_tags': [],
             'themes_tags': [],
             'wordpress_tickets_tags': [config.WORDPRESS_TICKETS_TAGS],
-            'shop_tickets_tags': [],
             'payment': [config.PAYMENT]
         }
 
@@ -64,49 +62,35 @@ class ManageTags:
         
         return results
 
-    def categorize_pro_versions(self, results):
+    def categorize_pro_and_free_versions(self, results):
         new_results = {
             'pro_plugins': [],
             'free_plugins': [],
             'pro_themes': [],
             'free_themes': []
         }
-        
+
+        def category_logic(source_field, object_to_check, target_field):
+            for tag in object_to_check.get(source_field, []):
+                if contains_pro(tag):
+                    new_results['pro_' + target_field].append(tag)
+                else:
+                    new_results['free_' + target_field].append(tag)
+
         def contains_pro(tag):
             return 'pro' in tag.lower()
         
-        for plugin_tag in results.get('plugins_tags', []):
-            if contains_pro(plugin_tag):
-                new_results['pro_plugins'].append(plugin_tag)
-            else:
-                new_results['free_plugins'].append(plugin_tag)
-
-        for theme_tag in results.get('themes_tags', []):
-            if contains_pro(theme_tag):
-                new_results['pro_themes'].append(theme_tag)
-            else:
-                new_results['free_themes'].append(theme_tag)
+        category_logic('plugins_tags', results, 'plugins')
+        category_logic('themes_tags', results, 'themes')
 
         return new_results
-
-    def categorize_final_themes_and_plugins(self, results):
-        def contains_keywords(tag):
-            return any(keyword in tag.lower() for keyword in config.KEYWORDS)
-
-        ## make this as a template
-        for plugin_tag in results.get('free_plugins', []):
-            if not contains_keywords(plugin_tag):
-                results['free_plugins'].remove(plugin_tag)
-
+    
 def main():
     tag_manager = ManageTags(config.CLIENT_ID, config.CLIENT_SECRET)
 
     results = tag_manager.categorize_helpscout_tags()
-    
-    pro_results = tag_manager.categorize_pro_versions(results)
 
-    tag_manager.categorize_final_themes_and_plugins(pro_results)
-    
-    print(pro_results)
+    final_results = tag_manager.categorize_pro_and_free_versions(results)
+    pprint(final_results)
 if __name__ == "__main__":
     main()
