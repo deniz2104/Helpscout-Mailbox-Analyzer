@@ -13,6 +13,7 @@ class CoreSystem:
 
     def make_request(self, endpoint: str, params: Optional[dict] = None) -> Optional[dict]:
         if not self.token_manager.ensure_valid_token():
+            print("ERROR: Failed to get valid token")
             return None
         
         self.access_token = self.token_manager.access_token
@@ -21,5 +22,11 @@ class CoreSystem:
             "Content-Type": "application/json"
         }
         
-        response = requests.get(f"{self.base_url}/{endpoint}", headers=headers, params=params)
-        return response.json() if response.status_code == 200 else None
+        url = f"{self.base_url}/{endpoint}"
+        response = requests.get(url, headers=headers, params=params, timeout=30)
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"API Error: {response.status_code} - {response.text}")
+            return None

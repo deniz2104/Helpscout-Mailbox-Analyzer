@@ -1,18 +1,18 @@
 from mailbox_base import MailboxBase
-import config
+from config import CLIENT_ID, CLIENT_SECRET, MAILBOX_PRO_ID
 
 class HelpScoutProMailboxConversations(MailboxBase):
     @property
-    def mailbox_id(self) -> str:
-        return str(config.MAILBOX_PRO_ID)
+    def mailbox_id(self) -> int:
+        return MAILBOX_PRO_ID
 
     @property
     def csv_filename(self) -> str:
         return "filtered_pro_conversations_ids.csv"
-
-def main():
-    client = HelpScoutProMailboxConversations(config.CLIENT_ID, config.CLIENT_SECRET)
-    client.analyze_last_month_conversations()
     
+def main():
+    client = HelpScoutProMailboxConversations(CLIENT_ID, CLIENT_SECRET)
+    client.analyze_last_month_conversations()
+
 if __name__ == "__main__":
     main()
