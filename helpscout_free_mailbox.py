@@ -9,14 +9,6 @@ class HelpscoutFreeMailboxConversations(MailboxBase):
     @property
     def csv_filename(self) -> str:
         return "filtered_free_conversations_ids.csv"
-    
-    def get_conversation(self):
-        conversations_data = self.get_mailbox(self.mailbox_id)
-        if not conversations_data or '_embedded' not in conversations_data:
-            return []
-        conversations = conversations_data['_embedded']['conversations']
-
-        return conversations
 
 def main():
     client = HelpscoutFreeMailboxConversations(CLIENT_ID, CLIENT_SECRET)
