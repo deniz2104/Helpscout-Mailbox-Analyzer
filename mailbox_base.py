@@ -37,18 +37,13 @@ class MailboxBase(ABC):
         """Get the creation date of a conversation."""
         conversation_data = self.core_system_helper.make_request(f"conversations/{conversation_id}")
         return conversation_data.get('createdAt') if conversation_data else None
+    
+    def get_a_convo(self, conversation_id):
+        return self.core_system_helper.make_request(f"conversations/{conversation_id}")
 
     def _convert_creation_date(self, creation_date) -> str:
         """Convert ISO format date to YYYY-MM-DD format."""
-        return datetime.fromisoformat(str(creation_date)).strftime("%Y-%m-%d")
-    
-    def _is_in_specified_date_range(self, creation_date: str, start_date: str, end_date: str) -> bool:
-        """Check if a creation date falls within the specified date range."""
-        if not creation_date:
-            return False
-        
-        conv_date = self._convert_creation_date(creation_date)
-        return start_date <= conv_date <= end_date
+        return datetime.fromisoformat(str(creation_date)).strftime("%Y-%m-%d %H:%M:%S")                   
 
     def export_list_to_csv(self, conversation_ids: Optional[list], conversation_tags: Optional[list], file_path: str, write_header: bool = False) -> None:
         """Export conversation IDs and tags to a CSV file."""
@@ -90,12 +85,13 @@ class MailboxBase(ABC):
                 break
 
             first_conversation_date = self.get_conversation_date(conversations, 0)
-            if first_conversation_date and first_conversation_date > end_date:
+            last_conversation_date = self.get_conversation_date(conversations, -1)
+            
+            if last_conversation_date and last_conversation_date > end_date:
                 page += 1
                 continue
-
-            last_conversation_date = self.get_conversation_date(conversations, -1)
-            if last_conversation_date and last_conversation_date < start_date:
+            
+            if first_conversation_date and first_conversation_date < start_date:
                 break
 
             process_conversations_func(conversations, first_page)

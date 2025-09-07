@@ -11,8 +11,8 @@ class HelpscoutOptimoleMailboxConversations(MailboxBase):
         return "filtered_optimole_conversations_ids.csv"
 
 def main():
-    client = HelpscoutOptimoleMailboxConversations(CLIENT_ID, CLIENT_SECRET)
-    client.analyze_last_month_conversations()
+    helpscout_optimole_mailbox = HelpscoutOptimoleMailboxConversations(CLIENT_ID, CLIENT_SECRET)
+    helpscout_optimole_mailbox.analyze_last_month_conversations()
 
 if __name__ == "__main__":
     main()

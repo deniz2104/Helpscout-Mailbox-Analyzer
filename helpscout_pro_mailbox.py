@@ -11,8 +11,8 @@ class HelpScoutProMailboxConversations(MailboxBase):
         return "filtered_pro_conversations_ids.csv"
     
 def main():
-    client = HelpScoutProMailboxConversations(CLIENT_ID, CLIENT_SECRET)
-    client.analyze_last_month_conversations()
+    helpscout_pro_mailbox = HelpScoutProMailboxConversations(CLIENT_ID, CLIENT_SECRET)
+    helpscout_pro_mailbox.analyze_last_month_conversations()
 
 if __name__ == "__main__":
     main()

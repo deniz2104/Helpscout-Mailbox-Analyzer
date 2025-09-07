@@ -1,4 +1,6 @@
 Tags
+billing,otter,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent,refund-completed,refund-requested,renewal
+billing,lifetime,neve,new user,priority,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent
 important,new user,priority,pro-user,super page cache pro
 30 days,billing,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent,redirection for cf7,refund-completed,refund-requested
 missing-product-name,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent
@@ -23,7 +25,7 @@ github,pro-user,super page cache pro
 ai-resolved,new user,priority,pro-user,super page cache pro
 billing,essential,no-customer,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent,themeisle-bundle
 ai-resolved,neve,new user,priority,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent
-billing,no-customer,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent,revive social
+billing,no-customer,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent,review-requested-poonam,revive social
 ai-resolved,lifetime,ppom pro,pro-user
 neve,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent
 30 days,billing,feedzy,new user,priority,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent,refund-requested
@@ -447,5 +449,3 @@ important,missing-product-name,pro-user,redir-pro-to-cform,redir-pro-to-cform-se
 neve,pro-user
 billing,ppom pro,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent
 missing-product-name,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent
-excluders,github,no-customer,wp full pay
-new user,priority,pro-user,redir-pro-to-cform,redir-pro-to-cform-sent,wp full pay bundle
