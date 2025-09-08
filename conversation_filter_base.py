@@ -1,7 +1,7 @@
 import csv
 import os
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 
 class ConversationFilterBase(ABC):
@@ -9,19 +9,6 @@ class ConversationFilterBase(ABC):
         self.ids_file = ids_file
         self.tags_file = tags_file
         self.target_tag = target_tag
-
-    def export_csv_to_list(self, file_path: Optional[str] = None) -> List[str]:
-        if file_path is None:
-            file_path = self.ids_file
-            
-        data_list = []
-        with open(file_path, 'r', newline='', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            next(reader)  # Skip header
-            for row in reader:
-                if row:
-                    data_list.append(row[0])
-        return data_list
 
     def make_list_from_csv(self, file_path: str, is_tags: bool = False) -> List[str]:
         data_list = []

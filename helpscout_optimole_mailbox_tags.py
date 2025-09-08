@@ -1,5 +1,4 @@
 from mailbox_base import MailboxBase
-from config import MAILBOX_OPTIMOLE_ID, CLIENT_ID, CLIENT_SECRET
 class HelpscoutOptimoleMailboxTags(MailboxBase):
     @property
     def mailbox_id(self) -> int:

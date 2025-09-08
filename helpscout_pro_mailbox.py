@@ -1,5 +1,4 @@
 from mailbox_base import MailboxBase
-from config import CLIENT_ID, CLIENT_SECRET, MAILBOX_PRO_ID
 
 class HelpScoutProMailboxConversations(MailboxBase):
     @property

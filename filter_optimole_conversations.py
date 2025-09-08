@@ -1,7 +1,7 @@
 from typing import Optional, List, Tuple
 from core_system import CoreSystem
-from config import CLIENT_ID, CLIENT_SECRET
 from conversation_filter_base import ConversationFilterBase
+from helper_file_to_export_csvs_to_list import export_csv_to_list
 
 class FilterOptimoleConversations(ConversationFilterBase):
     def __init__(self, client_id, client_secret):
@@ -29,7 +29,7 @@ class FilterOptimoleConversations(ConversationFilterBase):
 
     def has_conversation_replies(self) -> List[str]:
         list_of_ids_with_replies = []
-        conversation_ids = self.export_csv_to_list()
+        conversation_ids = export_csv_to_list(self.ids_file)
         for conversation_id in conversation_ids:
             threads = self.get_threads(conversation_id)
             if not threads or '_embedded' not in threads:
