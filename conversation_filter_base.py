@@ -30,7 +30,10 @@ class ConversationFilterBase(ABC):
             next(reader)  # Skip header
             for row in reader:
                 if row:
-                    data_list.append(row[0])
+                    if is_tags:
+                        data_list.append(','.join(row))
+                    else:
+                        data_list.append(row[0])
                 elif is_tags:
                     data_list.append('')
         return data_list

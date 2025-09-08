@@ -6,7 +6,7 @@ class FilterWporgConversations(ConversationFilterBase):
         super().__init__(
             ids_file='filtered_free_conversations_ids.csv',
             tags_file='filtered_free_conversations_tags.csv',
-            target_tag='wporg'
+            target_tag='team reply'
         )
 
     def filter_wporg_conversations(self) -> Tuple[List[str], List[str]]:
@@ -16,14 +16,13 @@ class FilterWporgConversations(ConversationFilterBase):
         conversation_ids, tags_list = self.load_conversations_and_tags()
 
         filtered_ids = []
-        wporg_count = 0
-
+        team_reply_count = 0
         for conv_id, tags in zip(conversation_ids, tags_list):
             if self.target_tag in tags.lower():
                 filtered_ids.append(conv_id)
-                wporg_count += 1
+                team_reply_count += 1
 
-        return filtered_ids, wporg_count
+        return filtered_ids, team_reply_count
 
     def make_filtered_list(self) -> Tuple[List[str], int]:
         return self.filter_conversations()
