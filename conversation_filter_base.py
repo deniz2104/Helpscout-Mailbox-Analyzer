@@ -5,16 +5,15 @@ from typing import List, Tuple
 
 
 class ConversationFilterBase(ABC):
-    def __init__(self, ids_file: str, tags_file: str, target_tag: str):
+    def __init__(self, ids_file: str, tags_file: str):
         self.ids_file = ids_file
         self.tags_file = tags_file
-        self.target_tag = target_tag
 
     def make_list_from_csv(self, file_path: str, is_tags: bool = False) -> List[str]:
         data_list = []
         with open(file_path, 'r', newline='', encoding='utf-8') as f:
             reader = csv.reader(f)
-            next(reader)  # Skip header
+            next(reader) 
             for row in reader:
                 if row:
                     if is_tags:
@@ -35,22 +34,6 @@ class ConversationFilterBase(ABC):
             return False
             
         return True
-
-    def load_conversations_and_tags(self) -> Tuple[List[str], List[str]]:
-        if not self.validate_csv_files():
-            return [], []
-
-        conversation_ids = self.make_list_from_csv(self.ids_file)
-        tags_list = self.make_list_from_csv(self.tags_file, is_tags=True)
-
-        if len(conversation_ids) != len(tags_list):
-            print(f"Warning: Mismatch in row counts - IDs: {len(conversation_ids)}, Tags: {len(tags_list)}")
-            # Use the minimum length to avoid index errors
-            min_length = min(len(conversation_ids), len(tags_list))
-            conversation_ids = conversation_ids[:min_length]
-            tags_list = tags_list[:min_length]
-
-        return conversation_ids, tags_list
 
     def make_csv(self, data_list: List[str], output_file: str, header: str = 'Conversation ID') -> None:
         with open(output_file, 'w', newline='', encoding='utf-8') as f:

@@ -17,7 +17,7 @@ class GetAccessToken():
             "client_secret": self.client_secret
         }
 
-        response = requests.post(token_url, data=data)
+        response = requests.post(token_url, data=data,timeout=30)
 
         if response.status_code == 200:
             token_data : dict = response.json()

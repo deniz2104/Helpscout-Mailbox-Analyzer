@@ -5,12 +5,24 @@ class FilterWporgConversations(ConversationFilterBase):
     def __init__(self):
         super().__init__(
             ids_file='filtered_free_conversations_ids.csv',
-            tags_file='filtered_free_conversations_tags.csv',
-            target_tag='team reply'
+            tags_file='filtered_free_conversations_tags.csv'
         )
+        self.target_tag = 'team reply'
 
-    def filter_wporg_conversations(self) -> Tuple[List[str], List[str]]:
-        return self.load_conversations_and_tags()
+    def load_conversations_and_tags(self) -> Tuple[List[str], List[str]]:
+        if not self.validate_csv_files():
+            return [], []
+
+        conversation_ids = self.make_list_from_csv(self.ids_file)
+        tags_list = self.make_list_from_csv(self.tags_file, is_tags=True)
+
+        if len(conversation_ids) != len(tags_list):
+            print(f"Warning: Mismatch in row counts - IDs: {len(conversation_ids)}, Tags: {len(tags_list)}")
+            min_length = min(len(conversation_ids), len(tags_list))
+            conversation_ids = conversation_ids[:min_length]
+            tags_list = tags_list[:min_length]
+
+        return conversation_ids, tags_list
 
     def filter_conversations(self) -> Tuple[List[str], int]:
         conversation_ids, tags_list = self.load_conversations_and_tags()
@@ -23,9 +35,6 @@ class FilterWporgConversations(ConversationFilterBase):
                 team_reply_count += 1
 
         return filtered_ids, team_reply_count
-
-    def make_filtered_list(self) -> Tuple[List[str], int]:
-        return self.filter_conversations()
 
     def export_filtered_conversations(self, output_file: str) -> None:
         filtered_ids, _ = self.filter_conversations()

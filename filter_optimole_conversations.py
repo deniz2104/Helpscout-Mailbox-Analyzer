@@ -2,13 +2,13 @@ from typing import Optional, List, Tuple
 from core_system import CoreSystem
 from conversation_filter_base import ConversationFilterBase
 from helper_file_to_export_csvs_to_list import export_csv_to_list
+from config_loader import get_helpscout_credentials
 
 class FilterOptimoleConversations(ConversationFilterBase):
     def __init__(self, client_id, client_secret):
         super().__init__(
             ids_file='filtered_optimole_conversations_ids.csv',
-            tags_file='filtered_optimole_conversations_tags.csv',
-            target_tag='optimole'
+            tags_file='filtered_optimole_conversations_tags.csv'
         )
         self.core_system_helper = CoreSystem(client_id, client_secret)
 
@@ -45,7 +45,8 @@ class FilterOptimoleConversations(ConversationFilterBase):
         return list_of_ids_with_replies 
 
 def main():
-    filter_optimole = FilterOptimoleConversations(CLIENT_ID, CLIENT_SECRET)
+    client_id, client_secret = get_helpscout_credentials()
+    filter_optimole = FilterOptimoleConversations(client_id, client_secret)
     filter_optimole.export_filtered_conversations('filtered_optimole_conversations_with_replies.csv')
 
 if __name__ == "__main__":
