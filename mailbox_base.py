@@ -4,7 +4,6 @@ import csv
 from datetime import datetime
 from core_system import CoreSystem
 
-
 class MailboxBase(ABC):
     """Abstract base class for HelpScout mailbox operations."""
     
@@ -33,17 +32,17 @@ class MailboxBase(ABC):
             "page": page_number
         })
 
-    def get_creation_date(self, conversation_id) -> Optional[str]:
+    def get_creation_date(self, conversation_id) -> str:
         """Get the creation date of a conversation."""
         conversation_data = self.core_system_helper.make_request(f"conversations/{conversation_id}")
-        return conversation_data.get('createdAt') if conversation_data else None
-    
+        return conversation_data.get('createdAt','')
+
     def get_a_convo(self, conversation_id):
         return self.core_system_helper.make_request(f"conversations/{conversation_id}")
 
     def _convert_creation_date(self, creation_date) -> str:
         """Convert ISO format date to YYYY-MM-DD format."""
-        return datetime.fromisoformat(str(creation_date)).strftime("%Y-%m-%d %H:%M:%S")                   
+        return datetime.fromisoformat(str(creation_date)).strftime("%Y-%m-%d %H:%M:%S").strip()
 
     def export_list_to_csv(self, conversation_ids: Optional[list], conversation_tags: Optional[list], file_path: str, write_header: bool = False) -> None:
         """Export conversation IDs and tags to a CSV file."""
@@ -55,7 +54,7 @@ class MailboxBase(ABC):
                     writer.writerow(['Tags'])
                 elif conversation_ids is not None:
                     writer.writerow(['Conversation ID'])
-            
+
             if conversation_tags is not None:
                 for tags in conversation_tags:
                     writer.writerow(tags)
@@ -66,7 +65,7 @@ class MailboxBase(ABC):
     def get_conversation_date(self, conversations, position):
         conversation_data = self.get_creation_date(conversations[position]['id'])
         return self._convert_creation_date(conversation_data) if conversation_data else None
-    
+
     def _analyze_last_month_base(self, process_conversations_func):
         from get_last_month_dates import get_last_month_dates
 
@@ -94,9 +93,20 @@ class MailboxBase(ABC):
             if first_conversation_date and first_conversation_date < start_date:
                 break
 
+            if first_page:
+                conversation_ids = [conv['id'] for conv in conversations]
+                valid_ids = [conv_id for conv_id in conversation_ids if start_date <= self.get_creation_date(conv_id) <= end_date]
+                conversations_to_process = [conv for conv in conversations if conv['id'] in valid_ids]
+                
+                if conversations_to_process:
+                    process_conversations_func(conversations_to_process, first_page)
+                    first_page = False
+                
+                page += 1
+                continue
+
             process_conversations_func(conversations, first_page)
 
-            first_page = False
             page += 1
 
     def analyze_last_month_tags(self):
