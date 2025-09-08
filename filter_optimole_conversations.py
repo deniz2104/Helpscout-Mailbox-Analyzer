@@ -1,8 +1,9 @@
-import csv
 from typing import Optional, List, Tuple
 from core_system import CoreSystem
 from helper_file_to_export_csvs_to_list import export_csv_to_list
 from config_loader import get_helpscout_credentials,load_config
+
+##TODO: take into consideration just the tags (wp-media-library,team reply for wporg (similar approach to process_wporg_conversations) and other are optimole general things that does not require tags)
 
 class FilterOptimoleConversations():
     def __init__(self, client_id, client_secret):
