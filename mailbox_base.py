@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List, Any, Callable
 import csv
 from datetime import datetime
 from core_system import CoreSystem
+from get_last_month_dates import get_last_month_dates
 
 class MailboxBase(ABC):
     """Abstract base class for HelpScout mailbox operations."""
-    
+
     def __init__(self, client_id: Optional[str], client_secret: Optional[str]):
         if not client_id or not client_secret:
             raise ValueError("CLIENT_ID and CLIENT_SECRET must be provided")
@@ -24,101 +25,87 @@ class MailboxBase(ABC):
         """Return the CSV filename for this mailbox type."""
         pass
 
-    def get_mailbox(self, page_number=1):
-        """Get conversations from the mailbox."""
+    def _get_conversations_page(self, page_number: int) -> Optional[dict]:
+        """Helper to get a single page of conversations."""
         return self.core_system_helper.make_request("conversations", params={
             "status": "active,open,closed",
             "mailbox": self.mailbox_id,
             "page": page_number
         })
 
-    def get_creation_date(self, conversation_id) -> str:
-        """Get the creation date of a conversation."""
-        conversation_data = self.core_system_helper.make_request(f"conversations/{conversation_id}")
-        return conversation_data.get('createdAt','')
-
-    def get_a_convo(self, conversation_id):
+    def _get_conversation_data(self, conversation_id: int) -> dict:
+        """Helper to get full data for a single conversation."""
         return self.core_system_helper.make_request(f"conversations/{conversation_id}")
 
-    def _convert_creation_date(self, creation_date) -> str:
-        """Convert ISO format date to YYYY-MM-DD format."""
-        return datetime.fromisoformat(str(creation_date)).strftime("%Y-%m-%d %H:%M:%S").strip()
+    def _convert_creation_date(self, creation_date: str) -> str:
+        """Convert ISO format date to YYYY-MM-DD HH:MM:SS format."""
+        return datetime.fromisoformat(creation_date).strftime("%Y-%m-%d %H:%M:%S")
 
-    def export_list_to_csv(self, conversation_ids: Optional[list], conversation_tags: Optional[list], file_path: str, write_header: bool = False) -> None:
-        """Export conversation IDs and tags to a CSV file."""
+    def export_list_to_csv(self, data: List[Any], header: List[str], file_path: str, write_header: bool = False) -> None:
+        """Export a list of data to a CSV file."""
         mode = 'w' if write_header else 'a'
         with open(file_path, mode, newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             if write_header:
-                if conversation_tags is not None:
-                    writer.writerow(['Tags'])
-                elif conversation_ids is not None:
-                    writer.writerow(['Conversation ID'])
+                writer.writerow(header)
+            writer.writerows(data)
 
-            if conversation_tags is not None:
-                for tags in conversation_tags:
-                    writer.writerow(tags)
-            if conversation_ids is not None:
-                for conv_id in conversation_ids:
-                    writer.writerow([conv_id])
-
-    def get_conversation_date(self, conversations, position):
-        conversation_data = self.get_creation_date(conversations[position]['id'])
-        return self._convert_creation_date(conversation_data) if conversation_data else None
-
-    def _analyze_last_month_base(self, process_conversations_func):
-        from get_last_month_dates import get_last_month_dates
-
-        start_date, end_date = get_last_month_dates()
+    def _process_conversations_in_range(self, start_date: str, end_date: str, process_func: Callable[[List[dict], bool], None]):
+        """Iterates through conversations and processes them if they are within the date range."""
         page = 1
-        first_page = True
+        is_first_page_write = True
 
         while True:
-            conversations_data = self.get_mailbox(page_number=page)
+            conversations_data = self._get_conversations_page(page_number=page)
+            conversations = conversations_data.get('_embedded', {}).get('conversations', [])
 
-            if not conversations_data or '_embedded' not in conversations_data:
-                break
-                
-            conversations = conversations_data['_embedded']['conversations']
             if not conversations:
                 break
 
-            first_conversation_date = self.get_conversation_date(conversations, 0)
-            last_conversation_date = self.get_conversation_date(conversations, -1)
-            
-            if last_conversation_date and last_conversation_date > end_date:
+            latest_conv_date = self.get_creation_date(conversations[0]['id'])
+            earliest_conv_date = self.get_creation_date(conversations[-1]['id'])
+
+            if latest_conv_date and latest_conv_date > end_date:
                 page += 1
                 continue
             
-            if first_conversation_date and first_conversation_date < start_date:
+            if earliest_conv_date and earliest_conv_date < start_date:
                 break
 
-            if first_page:
+            if is_first_page_write:
                 conversation_ids = [conv['id'] for conv in conversations]
                 valid_ids = [conv_id for conv_id in conversation_ids if start_date <= self.get_creation_date(conv_id) <= end_date]
                 conversations_to_process = [conv for conv in conversations if conv['id'] in valid_ids]
-                
+
                 if conversations_to_process:
-                    process_conversations_func(conversations_to_process, first_page)
-                    first_page = False
-                
+                    process_func(conversations_to_process, is_first_page_write)
+                    is_first_page_write = False
+
                 page += 1
                 continue
 
-            process_conversations_func(conversations, first_page)
-
+            process_func(conversations, is_first_page_write)
             page += 1
 
-    def analyze_last_month_tags(self):
-        def process_tags(conversations, is_first_page):
-            list_of_tags = [[tag['tag'] for tag in conv['tags']] for conv in conversations]
-            self.export_list_to_csv(conversation_ids=None, conversation_tags=list_of_tags, file_path=self.csv_filename, write_header=is_first_page)
+    def get_creation_date(self, conversation_id: int) -> Optional[str]:
+        conversation_data = self._get_conversation_data(conversation_id)
+        created_at = conversation_data.get('createdAt')
+        return self._convert_creation_date(created_at) if created_at else None
 
-        self._analyze_last_month_base(process_tags)
-            
-    def analyze_last_month_conversations(self):
-        def process_conversations(conversations, is_first_page):
-            list_of_ids = [conv['id'] for conv in conversations]
-            self.export_list_to_csv(conversation_ids=list_of_ids, conversation_tags=None, file_path=self.csv_filename, write_header=is_first_page)
+    def analyze_last_month_tags(self) -> None:
+        start_date, end_date = get_last_month_dates()
+
+        def process_and_export_tags(conversations: List[dict], write_header: bool):
+            tags_data = [[tag['tag'] for tag in conv.get('tags', [])] for conv in conversations]
+            self.export_list_to_csv(tags_data, ['Tags'], self.csv_filename, write_header)
         
-        self._analyze_last_month_base(process_conversations)
+        self._process_conversations_in_range(start_date, end_date, process_and_export_tags)
+
+    def analyze_last_month_conversations(self) -> None:
+        start_date, end_date = get_last_month_dates()
+
+        def process_and_export_ids(conversations: List[dict], write_header: bool):
+            ids_data = [[conv['id']] for conv in conversations]
+            self.export_list_to_csv(ids_data, ['Conversation ID'], self.csv_filename, write_header)
+
+        self._process_conversations_in_range(start_date, end_date, process_and_export_ids)

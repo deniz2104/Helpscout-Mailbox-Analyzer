@@ -13,8 +13,8 @@ class ProcessWPOrgConversations(BaseWporgConversations):
 def main():
     client_id, client_secret = get_helpscout_credentials()
     processor = ProcessWPOrgConversations(client_id, client_secret)
-    result = processor.process_conversations()
-    print(f"Username occurrences: {result}")
-
+    processor.dict_of_usernames = processor.process_conversations()
+    print(processor.dict_of_usernames)
+    
 if __name__ == "__main__":
     main()
