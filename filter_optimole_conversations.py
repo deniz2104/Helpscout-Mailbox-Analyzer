@@ -7,7 +7,7 @@ from config_loader import get_helpscout_credentials,load_config
 
 class FilterOptimoleConversations():
     def __init__(self, client_id, client_secret):
-        self.ids_file = 'filtered_optimole_conversations_ids.csv'
+        self.ids_file = 'CSVs/filtered_optimole_conversations_ids.csv'
         self.core_system_helper = CoreSystem(client_id, client_secret)
         config = load_config()
         self.team_members= list(config.get("TEAM_MEMBERS", {}).values())

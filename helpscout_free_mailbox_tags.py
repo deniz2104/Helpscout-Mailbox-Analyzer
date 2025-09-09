@@ -8,7 +8,7 @@ class HelpscoutFreeMailboxTags(MailboxBase):
 
     @property
     def csv_filename(self) -> str:
-        return "filtered_free_conversations_tags.csv"
+        return "CSVs/filtered_free_conversations_tags.csv"
 
 
 def main():

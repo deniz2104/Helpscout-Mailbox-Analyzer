@@ -6,7 +6,7 @@ from config_loader import get_helpscout_credentials, load_config
 class ProcessWPOrgConversations():
     def __init__(self, client_id, client_secret):
         self.core_system_helper = CoreSystem(client_id, client_secret)
-        self.processed_file = 'filtered_wporg_conversations.csv'
+        self.processed_file = 'CSVs/filtered_wporg_conversations.csv'
         self.dict_of_usernames = {}
         config = load_config()
         self.wp_org_usernames = list(config.get("WP_ORG_USERNAMES", {}).keys())

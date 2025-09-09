@@ -4,8 +4,8 @@ import os
 
 class FilterWporgConversations():
     def __init__(self):
-        self.ids_file = 'filtered_free_conversations_ids.csv'
-        self.tags_file = 'filtered_free_conversations_tags.csv'
+        self.ids_file = 'CSVs/filtered_free_conversations_ids.csv'
+        self.tags_file = 'CSVs/filtered_free_conversations_tags.csv'
         self.target_tag = 'team reply'
 
     def make_list_from_csv(self, file_path: str, is_tags: bool = False) -> List[str]:
@@ -75,7 +75,7 @@ class FilterWporgConversations():
 
 def main():
     filter_wporg = FilterWporgConversations()
-    filter_wporg.export_filtered_conversations('filtered_wporg_conversations.csv')
+    filter_wporg.export_filtered_conversations('CSVs/filtered_wporg_conversations.csv')
 
 if __name__ == "__main__":
     main()

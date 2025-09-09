@@ -9,7 +9,7 @@ class HelpScoutProMailboxConversations(MailboxBase):
 
     @property
     def csv_filename(self) -> str:
-        return "filtered_pro_conversations_ids.csv"
+        return "CSVs/filtered_pro_conversations_ids.csv"
     
 def main():
     client_id, client_secret = get_helpscout_credentials()

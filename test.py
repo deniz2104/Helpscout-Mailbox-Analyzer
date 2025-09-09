@@ -1,71 +1,12 @@
 import os
 import json
-import subprocess
-import sys
+import sqlite3
+import webbrowser
+from threading import Timer
+from flask import Flask, render_template_string, request, redirect, url_for
 
 DATA_FILE = "config.json"
-VENV_DIR = "env"
-REQUIREMENTS_FILE = "requirements.txt"
-
-def get_venv_python():
-    """Get the path to the Python executable in the virtual environment."""
-    if os.name == 'nt':  # Windows
-        return os.path.join(VENV_DIR, "Scripts", "python")
-    else:  # macOS/Linux
-        return os.path.join(VENV_DIR, "bin", "python")
-
-def get_venv_pip():
-    """Get the path to the pip executable in the virtual environment."""
-    if os.name == 'nt':  # Windows
-        return os.path.join(VENV_DIR, "Scripts", "pip")
-    else:  # macOS/Linux
-        return os.path.join(VENV_DIR, "bin", "pip")
-
-def setup_virtual_environment_sync():
-    """Set up virtual environment and install requirements synchronously."""
-    try:
-        # Check if virtual environment already exists
-        if not os.path.exists(VENV_DIR):
-            print("Creating virtual environment...")
-            subprocess.run([sys.executable, "-m", "venv", VENV_DIR], check=True)
-            print("Virtual environment created successfully!")
-        
-        pip_path = get_venv_pip()
-        
-        # Install requirements if requirements.txt exists
-        if os.path.exists(REQUIREMENTS_FILE):
-            print("Installing/updating requirements...")
-            subprocess.run([pip_path, "install", "-r", REQUIREMENTS_FILE], check=True)
-            print("Requirements installed successfully!")
-        else:
-            print("No requirements.txt found, skipping package installation.")
-            
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Error setting up virtual environment: {e}")
-        return False
-    except (OSError, FileNotFoundError) as e:
-        print(f"Error during environment setup: {e}")
-        return False
-
-def is_running_in_venv():
-    """Check if we're already running in the virtual environment."""
-    return (hasattr(sys, 'real_prefix') or 
-            (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix) or
-            sys.executable.endswith(os.path.join(VENV_DIR, "bin", "python")) or
-            sys.executable.endswith(os.path.join(VENV_DIR, "Scripts", "python.exe")))
-
-def restart_in_venv():
-    """Restart the application using the virtual environment's Python."""
-    venv_python = get_venv_python()
-    if os.path.exists(venv_python):
-        print(f"Restarting application with virtual environment Python: {venv_python}")
-        # Re-run this script with the virtual environment's Python
-        subprocess.run([venv_python] + sys.argv, check=False)
-        sys.exit(0)
-    else:
-        print("Virtual environment Python not found!")
-        return False
+DB_FILE = "app.db"
 
 def load_data():
     if not os.path.exists(DATA_FILE):
@@ -89,6 +30,7 @@ def load_data():
             "MAILBOX_OPTIMOLE_ID": 160661
         }
         save_data(default_data)
+
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -99,8 +41,11 @@ def save_data(data):
 def credentials_exist(data):
     return data["HELPSCOUT_CLIENT_ID"] and data["HELPSCOUT_CLIENT_SECRET"]
 
+def get_connection():
+    return sqlite3.connect(DB_FILE)
+
 form_template = """
-<h2>Set HELPSCOUT Credentials (One-time setup)</h2>
+<h2>Set HELPSCOUT Credentials</h2>
 <form method="post">
     <label>HELPSCOUT_CLIENT_ID:</label><br>
     <input type="text" name="client_id" required><br><br>
@@ -113,8 +58,14 @@ form_template = """
 """
 
 dashboard_template = """
+<h2>Dashboard</h2>
 
-<h3>Add New Team Member</h3>
+<a href="{{ url_for('products') }}">➡ Manage Products</a><br><br>
+<a href="{{ url_for('add_member_page') }}">➡ Add Team Member</a>
+"""
+
+add_member_template = """
+<h2>Add New Team Member</h2>
 <form method="post" action="{{ url_for('add_member') }}">
     <label>Name:</label><br>
     <input type="text" name="name" required><br><br>
@@ -127,16 +78,44 @@ dashboard_template = """
     
     <button type="submit">Add</button>
 </form>
+
+<br>
+<a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
 """
 
-def create_flask_app():
-    """Create and configure the Flask application."""
-    try:
-        from flask import Flask, render_template_string, request, redirect, url_for
-    except ImportError:
-        print("Flask not found. Please ensure the virtual environment is set up correctly.")
-        sys.exit(1)
-    
+products_template = """
+<h2>Products</h2>
+<ul>
+{% for pid, name, tags in products %}
+    <li>
+        <b>{{ name }}</b><br>
+        Tags: {{ ", ".join(tags) if tags else "No tags" }}
+        <br>
+        <form method="post" action="{{ url_for('edit_tags', product_id=pid) }}">
+            <input type="text" name="tags" placeholder="comma,separated,tags" value="{{ ','.join(tags) }}">
+            <button type="submit">Update Tags</button>
+        </form>
+    </li>
+{% endfor %}
+</ul>
+
+<hr>
+<h3>Add New Product</h3>
+<form method="post" action="{{ url_for('add_product') }}">
+    <label>Name:</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Tags (comma separated):</label><br>
+    <input type="text" name="tags"><br><br>
+
+    <button type="submit">Add</button>
+</form>
+
+<br>
+<a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
+"""
+
+def create_flask_app():    
     app = Flask(__name__)
     app.secret_key = "supersecret"
     
@@ -161,12 +140,11 @@ def create_flask_app():
 
     @app.route("/dashboard")
     def dashboard():
-        data = load_data()
-        return render_template_string(
-            dashboard_template, 
-            team_members=data["TEAM_MEMBERS"], 
-            wp_usernames=data["WP_ORG_USERNAMES"]
-        )
+        return render_template_string(dashboard_template)
+
+    @app.route("/add_member_page")
+    def add_member_page():
+        return render_template_string(add_member_template)
 
     @app.route("/add_member", methods=["POST"])
     def add_member():
@@ -180,23 +158,72 @@ def create_flask_app():
         save_data(data)
 
         return redirect(url_for("dashboard"))
-    
+
+    @app.route("/products")
+    def products():
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT id, name FROM products")
+        products = cursor.fetchall()
+
+        product_list = []
+        for pid, name in products:
+            cursor.execute("SELECT name FROM tags WHERE product_id=?", (pid,))
+            tags = [row[0] for row in cursor.fetchall()]
+            product_list.append((pid, name, tags))
+
+        conn.close()
+        return render_template_string(products_template, products=product_list)
+
+    @app.route("/add_product", methods=["POST"])
+    def add_product():
+        name = request.form.get("name")
+        tags_input = request.form.get("tags", "")
+        tags = [t.strip() for t in tags_input.split(",") if t.strip()]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO products (name) VALUES (?)", (name,))
+        product_id = cursor.lastrowid
+
+        for tag in tags:
+            cursor.execute("INSERT INTO tags (name, product_id) VALUES (?, ?)", (tag, product_id))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("products"))
+
+    @app.route("/edit_tags/<int:product_id>", methods=["POST"])
+    def edit_tags(product_id):
+        tags_input = request.form.get("tags", "")
+        tags = [t.strip() for t in tags_input.split(",") if t.strip()]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM tags WHERE product_id=?", (product_id,))
+
+        for tag in tags:
+            cursor.execute("INSERT INTO tags (name, product_id) VALUES (?, ?)", (tag, product_id))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("products"))
+
     return app
 
 if __name__ == "__main__":
-    print("Starting HelpScout Mailbox Analyzer...")
-    
-    # Check if we're running in the virtual environment
-    if not is_running_in_venv():
-        print("Setting up virtual environment...")
-        if setup_virtual_environment_sync():
-            print("Virtual environment ready. Restarting in virtual environment...")
-            restart_in_venv()
-        else:
-            print("Failed to set up virtual environment. Exiting.")
-            sys.exit(1)
-    else:
-        print("Running in virtual environment. Starting Flask application...")
-    
+    port = 5001
+    url = f"http://127.0.0.1:{port}/"
+
+    def open_browser():
+        webbrowser.open(url)
+
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        Timer(1, open_browser).start()
+
     app = create_flask_app()
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host="0.0.0.0", port=port)
