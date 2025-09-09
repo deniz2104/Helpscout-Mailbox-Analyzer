@@ -1,6 +1,7 @@
 from typing import List, Tuple
 import csv
 import os
+from helper_file_to_make_csv_from_list import make_csv
 
 class FilterWporgConversations():
     def __init__(self):
@@ -34,14 +35,6 @@ class FilterWporgConversations():
             
         return True
 
-    def make_csv(self, data_list: List[str], output_file: str, header: str = 'Conversation ID') -> None:
-        with open(output_file, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow([header])
-            for item in data_list:
-                writer.writerow([item])
-
-
     def load_conversations_and_tags(self) -> Tuple[List[str], List[str]]:
         if not self.validate_csv_files():
             return [], []
@@ -71,7 +64,7 @@ class FilterWporgConversations():
 
     def export_filtered_conversations(self, output_file: str) -> None:
         filtered_ids, _ = self.filter_conversations()
-        self.make_csv(filtered_ids, output_file)
+        make_csv(filtered_ids, output_file)
 
 def main():
     filter_wporg = FilterWporgConversations()
