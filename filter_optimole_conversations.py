@@ -13,11 +13,11 @@ class FilterOptimoleConversations:
         self.team_members = list(config.get("TEAM_MEMBERS", {}).values())
         self.max_workers = 10
 
-    def get_threads(self, conversation_id):
+    def _get_threads(self, conversation_id):
         return self.core_system_helper.make_request(f"conversations/{conversation_id}/threads")
 
     def _check_conversation_for_replies(self, conversation_id):
-        threads = self.get_threads(conversation_id)
+        threads = self._get_threads(conversation_id)
         if not threads or '_embedded' not in threads:
             print(f"No threads found for conversation ID {conversation_id}")
             return None
