@@ -3,13 +3,9 @@ from base_wporg_conversations import BaseWporgConversations
 from config_loader import get_helpscout_credentials
 
 class ProcessOptimoleConversations(BaseWporgConversations):
-    def __init__(self, client_id, client_secret):
-        super().__init__(client_id, client_secret)
-        self.dict_of_tags_and_usernames = {}
-
     @property
     def processed_file(self) -> str:
-        return 'CSVs/filtered_optimole_conversations.csv'
+        return 'CSVs/filtered_optimole_conversations_no_replies.csv'
     
     @property  
     def config_usernames_key(self) -> str:
@@ -18,8 +14,8 @@ class ProcessOptimoleConversations(BaseWporgConversations):
 def main():
     client_id, client_secret = get_helpscout_credentials()
     processor = ProcessOptimoleConversations(client_id, client_secret)
-    processor.dict_of_usernames = processor.process_conversations()    
-
+    processor.dict_of_usernames = processor.process_conversations()
+    
 if __name__ == "__main__":
     main()
 
