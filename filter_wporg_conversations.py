@@ -3,6 +3,8 @@ import csv
 import os
 from helper_file_to_make_csv_from_list import make_csv
 
+## !IMPORTANT!
+
 class FilterWporgConversations():
     def __init__(self):
         self.ids_file = 'CSVs/filtered_free_conversations_ids.csv'

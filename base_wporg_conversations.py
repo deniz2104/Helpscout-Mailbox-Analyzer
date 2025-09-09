@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
+from collections import Counter
 import re
 from core_system import CoreSystem
 from helper_file_to_export_csvs_to_list import export_csv_to_list
 from typing import Optional
+from concurrent.futures import ThreadPoolExecutor
 
 class BaseWporgConversations(ABC):
     def __init__(self, client_id, client_secret):
@@ -45,22 +47,23 @@ class BaseWporgConversations(ABC):
         return list(config.get(self.config_usernames_key, {}).keys())
     
     def process_conversations(self):
-        """Process conversations and count username occurrences."""
-        usernames = self.load_usernames_from_config()
+        usernames = set(self.load_usernames_from_config())
         conversation_ids = export_csv_to_list(self.processed_file)
-        
-        for conversation_id in conversation_ids:
-            threads = self.get_threads(conversation_id)
-            
-            if not threads or '_embedded' not in threads:
-                print(f"No threads found for conversation ID {conversation_id}")
-                continue
-            
-            for thread in threads['_embedded']['threads']:
-                if self.should_process_thread(thread) and 'body' in thread:
-                    body = thread['body']
-                    username_id = self.extract_username_from_body(body)
-                    if username_id and username_id in usernames:
-                        self.dict_of_usernames[username_id] = self.dict_of_usernames.get(username_id, 0) + 1
 
-        return self.dict_of_usernames
+        def process_single_conversation(conv_id):
+            threads = self.get_threads(conv_id)
+            if not threads or '_embedded' not in threads:
+                return []
+            return [
+                self.extract_username_from_body(thread['body'])
+                for thread in threads['_embedded']['threads']
+                if self.should_process_thread(thread) and 'body' in thread
+            ]
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            results = executor.map(process_single_conversation, conversation_ids)
+
+        extracted_usernames = (u for conv_users in results for u in conv_users)
+        filtered_usernames = filter(lambda u: u and u in usernames, extracted_usernames)
+
+        return dict(Counter(filtered_usernames))
