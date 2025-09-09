@@ -34,10 +34,8 @@ class FilterWporgConversations():
         
         return conversation_ids[:min_length], tags_list[:min_length]
 
-    def _filter_by_tag(self, conversation_ids: List[str], tags_list: List[str]) -> Tuple[List[str], int]:
-        filtered_data = [(conv_id, tags) for conv_id, tags in zip(conversation_ids, tags_list) if self.target_tag in tags]
-        filtered_ids = [item[0] for item in filtered_data]
-        return filtered_ids, len(filtered_ids)
+    def _filter_by_tag(self, conversation_ids: List[str], tags_list: List[str]) -> List[str]:
+        return [conv_id for conv_id, tags in zip(conversation_ids, tags_list) if self.target_tag in tags]
 
     def process_and_export(self) -> None:
         conversation_ids, tags_list = self._get_conversation_data()
@@ -46,14 +44,10 @@ class FilterWporgConversations():
             print("Could not load necessary data. Exiting.")
             return
 
-        filtered_ids, team_reply_count = self._filter_by_tag(conversation_ids, tags_list)
+        filtered_ids = self._filter_by_tag(conversation_ids, tags_list)
 
         if filtered_ids:
             make_csv(filtered_ids, self.output_file)
-            print(f"Exported {len(filtered_ids)} conversations with '{self.target_tag}' to {self.output_file}")
-            print(f"Total '{self.target_tag}' occurrences: {team_reply_count}")
-        else:
-            print(f"No conversations found with the tag '{self.target_tag}'. No file exported.")
 
 def main():
     filter_wporg = FilterWporgConversations()
