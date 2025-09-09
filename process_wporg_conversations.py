@@ -22,9 +22,6 @@ class ProcessWPOrgConversations():
 
     def get_threads(self, conversation_id):
         return self.core_system_helper.make_request(f"conversations/{conversation_id}/threads")
-
-    def get_a_conversation(self, conversation_id):
-        return self.core_system_helper.make_request(f"conversations/{conversation_id}")
     
     def process_conversations(self):
         conversation_ids = export_csv_to_list(self.processed_file)

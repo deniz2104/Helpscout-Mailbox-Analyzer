@@ -14,10 +14,6 @@ class FilterOptimoleConversations():
         config = load_config()
         self.team_members= list(config.get("TEAM_MEMBERS", {}).values())
 
-    def get_creation_date(self, conversation_id) -> Optional[str]:
-        conversation_data = self.core_system_helper.make_request(f"conversations/{conversation_id}")
-        return conversation_data.get('createdAt') if conversation_data else None
-
     def get_threads(self, conversation_id):
         return self.core_system_helper.make_request(f"conversations/{conversation_id}/threads")
 
