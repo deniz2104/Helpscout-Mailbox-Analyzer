@@ -3,7 +3,6 @@ from core_system import CoreSystem
 from config_loader import get_helpscout_credentials
 from conversation_tag_base import ConversationTagBase
 
-
 class ProcessProConversations(ConversationTagBase):
     def _get_core_system_helper(self):
         return CoreSystem(self.client_id, self.client_secret)

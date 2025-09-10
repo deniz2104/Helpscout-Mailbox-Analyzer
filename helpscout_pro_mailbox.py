@@ -14,11 +14,7 @@ class HelpScoutProMailboxConversations(MailboxBase):
 def main():
     client_id, client_secret = get_helpscout_credentials()
     helpscout_pro_mailbox = HelpScoutProMailboxConversations(client_id, client_secret)
-    import time
-    start=time.time()
     helpscout_pro_mailbox.analyze_last_month_conversations()
-    end=time.time()
-    print(f"Time taken: {end - start} seconds")
 
 if __name__ == "__main__":
     main()
