@@ -1,4 +1,5 @@
 import requests
+from threading import Event
 from typing import Optional
 from get_access_token import GetAccessToken
 
@@ -27,6 +28,8 @@ class CoreSystem:
         
         if response.status_code == 200:
             return response.json()
+        elif response.status_code == 429:
+            Event().wait(timeout=0.01)
         else:
             print(f"API Error: {response.status_code} - {response.text}")
             return None

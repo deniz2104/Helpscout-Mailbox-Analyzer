@@ -1,7 +1,7 @@
-from base_wporg_conversations import BaseWporgConversations
+from base_wporg_conversations import BaseConversations
 from config_loader import get_helpscout_credentials
 
-class ProcessWPOrgConversations(BaseWporgConversations):
+class ProcessWPOrgConversations(BaseConversations):
     @property
     def processed_file(self) -> str:
         return 'CSVs/filtered_wporg_conversations.csv'
@@ -14,7 +14,6 @@ def main():
     client_id, client_secret = get_helpscout_credentials()
     processor = ProcessWPOrgConversations(client_id, client_secret)
     processor.dict_of_usernames = processor.process_conversations()
-    print(processor.dict_of_usernames)
     
 if __name__ == "__main__":
     main()

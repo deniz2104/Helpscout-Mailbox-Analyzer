@@ -6,7 +6,7 @@ from helper_file_to_export_csvs_to_list import export_csv_to_list
 from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
 
-class BaseWporgConversations(ABC):
+class BaseConversations(ABC):
     def __init__(self, client_id, client_secret):
         self.client_id = client_id
         self.client_secret = client_secret

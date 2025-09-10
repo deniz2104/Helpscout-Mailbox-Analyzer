@@ -1,0 +1,31 @@
+from typing import Optional
+from core_system import CoreSystem
+from config_loader import get_helpscout_credentials
+from conversation_tag_base import ConversationTagBase
+
+
+class ProcessProConversations(ConversationTagBase):
+    def _get_core_system_helper(self):
+        return CoreSystem(self.client_id, self.client_secret)
+
+    @property
+    def processed_file_for_tags(self) -> str:
+        return "CSVs/filtered_pro_conversations_ids.csv"
+
+    def _get_category(self, product_or_plugin: Optional[str]) -> str:
+        return product_or_plugin if product_or_plugin else "Others"
+
+    def categorise_filtered_conversations(self) -> dict:
+        if "Others" not in self.dictionary_of_tag_and_names:
+            self.dictionary_of_tag_and_names["Others"] = {}
+
+        return super().categorise_filtered_conversations()
+
+def main():
+    client_id, client_secret = get_helpscout_credentials()
+    processor = ProcessProConversations(client_id, client_secret)
+    categorized_results = processor.categorise_filtered_conversations()
+    processor.dictionary_of_tag_and_names = categorized_results
+
+if __name__ == "__main__":
+    main()
