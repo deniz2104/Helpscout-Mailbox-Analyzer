@@ -40,7 +40,11 @@ def main():
     client_id, client_secret = get_helpscout_credentials()
     filter_optimole = FilterOptimoleConversations(client_id, client_secret)
     filtered_ids = filter_optimole.has_conversation_replies()
-    make_csv(filtered_ids, 'CSVs/filtered_optimole_conversations.csv')
-    
+    if filtered_ids:
+        make_csv(filtered_ids, 'CSVs/filtered_optimole_conversations.csv')
+    else:
+        print("No conversations found with replies. Creating empty output file.")
+        make_csv([], 'CSVs/filtered_optimole_conversations.csv')
+
 if __name__ == "__main__":
     main()

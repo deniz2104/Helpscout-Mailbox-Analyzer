@@ -41,17 +41,21 @@ class FilterWporgConversations():
         conversation_ids, tags_list = self._get_conversation_data()
         
         if not conversation_ids or not tags_list:
-            print("Could not load necessary data. Exiting.")
+            print("Could not load necessary data. Creating empty output file.")
+            make_csv([], self.output_file)
             return
 
         filtered_ids = self._filter_by_tag(conversation_ids, tags_list)
 
         if filtered_ids:
             make_csv(filtered_ids, self.output_file)
+        else:
+            print("No conversations found with the target tag. Creating empty output file.")
+            make_csv([], self.output_file)
 
 def main():
     filter_wporg = FilterWporgConversations()
     filter_wporg.process_and_export()
-    
+
 if __name__ == "__main__":
     main()
