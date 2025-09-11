@@ -83,7 +83,7 @@ class MailboxBase(ABC):
                 valid_ids = []
                 for conv_id in conversation_ids:
                     creation_date = self.get_creation_date(conv_id)
-                    if creation_date and start_date <= creation_date <= end_date:
+                    if creation_date and start_date < creation_date < end_date:
                         valid_ids.append(conv_id)
                 conversations_to_process = [conv for conv in conversations if conv['id'] in valid_ids]
 
