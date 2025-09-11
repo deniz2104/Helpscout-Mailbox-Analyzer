@@ -23,8 +23,7 @@ class ProcessProConversations(ConversationTagBase):
 def main():
     client_id, client_secret = get_helpscout_credentials()
     processor = ProcessProConversations(client_id, client_secret)
-    categorized_results = processor.categorise_filtered_conversations()
-    processor.dictionary_of_tag_and_names = categorized_results
-
+    return processor.categorise_filtered_conversations()
+    
 if __name__ == "__main__":
     main()

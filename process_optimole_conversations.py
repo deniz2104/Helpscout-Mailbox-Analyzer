@@ -18,7 +18,7 @@ class ProcessOptimoleConversations(BaseConversations, ConversationTagBase):
     
     @property
     def processed_file_for_tags(self) -> str:
-        return "CSVs/filtered_optimole_conversations_ids.csv"
+        return "CSVs/filtered_optimole_conversations.csv"
 
     @property
     def config_usernames_key(self) -> str:
@@ -36,9 +36,7 @@ class ProcessOptimoleConversations(BaseConversations, ConversationTagBase):
 def main():
     client_id, client_secret = get_helpscout_credentials()
     processor = ProcessOptimoleConversations(client_id, client_secret)
-    processor.dict_of_usernames = processor.process_conversations()
-    categorized_results = processor.categorise_filtered_conversations()
-    processor.dictionary_of_tag_and_names = categorized_results
+    return processor.process_conversations(), processor.categorise_filtered_conversations()
 
 if __name__ == "__main__":
     main()
