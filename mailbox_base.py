@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List, Any, Callable
 import csv
+import os
 from datetime import datetime
 from core_system import CoreSystem
 from get_last_month_dates import get_last_month_dates
@@ -33,7 +34,7 @@ class MailboxBase(ABC):
             "page": page_number
         })
 
-    def _get_conversation_data(self, conversation_id: int) -> dict:
+    def _get_conversation_data(self, conversation_id: int) -> Optional[dict]:
         """Helper to get full data for a single conversation."""
         return self.core_system_helper.make_request(f"conversations/{conversation_id}")
 
@@ -43,6 +44,8 @@ class MailboxBase(ABC):
 
     def export_list_to_csv(self, data: List[Any], header: List[str], file_path: str, write_header: bool = False) -> None:
         """Export a list of data to a CSV file."""
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
         mode = 'w' if write_header else 'a'
         with open(file_path, mode, newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
@@ -57,6 +60,9 @@ class MailboxBase(ABC):
 
         while True:
             conversations_data = self._get_conversations_page(page_number=page)
+            if conversations_data is None:
+                print(f"Warning: Could not retrieve conversations for page {page}")
+                break
             conversations = conversations_data.get('_embedded', {}).get('conversations', [])
 
             if not conversations:
@@ -74,7 +80,11 @@ class MailboxBase(ABC):
 
             if is_first_page_write:
                 conversation_ids = [conv['id'] for conv in conversations]
-                valid_ids = [conv_id for conv_id in conversation_ids if start_date <= self.get_creation_date(conv_id) <= end_date]
+                valid_ids = []
+                for conv_id in conversation_ids:
+                    creation_date = self.get_creation_date(conv_id)
+                    if creation_date and start_date <= creation_date <= end_date:
+                        valid_ids.append(conv_id)
                 conversations_to_process = [conv for conv in conversations if conv['id'] in valid_ids]
 
                 if conversations_to_process:
@@ -89,6 +99,9 @@ class MailboxBase(ABC):
 
     def get_creation_date(self, conversation_id: int) -> Optional[str]:
         conversation_data = self._get_conversation_data(conversation_id)
+        if conversation_data is None:
+            print(f"Warning: Could not retrieve data for conversation {conversation_id}")
+            return None
         created_at = conversation_data.get('createdAt')
         return self._convert_creation_date(created_at) if created_at else None
 
