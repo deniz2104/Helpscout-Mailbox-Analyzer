@@ -1,3 +1,5 @@
+import json
+import os
 from typing import Optional
 
 from base_wporg_conversations import BaseConversations
@@ -36,7 +38,13 @@ class ProcessOptimoleConversations(BaseConversations, ConversationTagBase):
 def main():
     client_id, client_secret = get_helpscout_credentials()
     processor = ProcessOptimoleConversations(client_id, client_secret)
-    return processor.process_conversations(), processor.categorise_filtered_conversations()
+    result1 = processor.process_conversations()
+    result2 = processor.categorise_filtered_conversations()
+    
+    # Save results to JSON file for later retrieval
+    os.makedirs("CSVs", exist_ok=True)
+    with open("CSVs/process_optimole_results.json", "w", encoding="utf-8") as f:
+        json.dump(({"Wporg Optimole": result1}, result2), f, indent=2)
 
 if __name__ == "__main__":
     main()

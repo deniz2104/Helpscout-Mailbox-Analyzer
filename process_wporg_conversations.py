@@ -1,3 +1,5 @@
+import json
+import os
 from base_wporg_conversations import BaseConversations
 from config_loader import get_helpscout_credentials
 
@@ -13,7 +15,12 @@ class ProcessWPOrgConversations(BaseConversations):
 def main():
     client_id, client_secret = get_helpscout_credentials()
     processor = ProcessWPOrgConversations(client_id, client_secret)
-    return processor.process_conversations()
+    result = processor.process_conversations()
+    
+    # Save results to JSON file for later retrieval
+    os.makedirs("CSVs", exist_ok=True)
+    with open("CSVs/process_wporg_results.json", "w", encoding="utf-8") as f:
+        json.dump({"Wporg": result}, f, indent=2)
 
 if __name__ == "__main__":
     main()

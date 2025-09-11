@@ -2,10 +2,9 @@ import os
 import json
 import webbrowser
 from threading import Timer
-from flask import Flask, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for
 
 DATA_FILE = "config.json"
-DB_FILE = "app.db"
 
 def load_data():
     if not os.path.exists(DATA_FILE):
@@ -40,8 +39,6 @@ def save_data(data):
 def credentials_exist(data):
     return data["HELPSCOUT_CLIENT_ID"] and data["HELPSCOUT_CLIENT_SECRET"]
 
-from flask import Flask, render_template, request, redirect, url_for
-# keep the rest of your imports...
 
 def create_flask_app():    
     app = Flask(__name__)

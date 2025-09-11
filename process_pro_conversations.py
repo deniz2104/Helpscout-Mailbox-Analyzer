@@ -1,3 +1,5 @@
+import json
+import os
 from typing import Optional
 from core_system import CoreSystem
 from config_loader import get_helpscout_credentials
@@ -23,7 +25,12 @@ class ProcessProConversations(ConversationTagBase):
 def main():
     client_id, client_secret = get_helpscout_credentials()
     processor = ProcessProConversations(client_id, client_secret)
-    return processor.categorise_filtered_conversations()
+    result = processor.categorise_filtered_conversations()
     
+    # Save results to JSON file for later retrieval
+    os.makedirs("CSVs", exist_ok=True)
+    with open("CSVs/process_pro_results.json", "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2)
+        
 if __name__ == "__main__":
     main()
