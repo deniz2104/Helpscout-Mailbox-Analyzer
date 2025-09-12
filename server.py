@@ -1,8 +1,9 @@
 import os
 import json
+import csv
 import webbrowser
 from threading import Timer
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_file
 
 DATA_FILE = "config.json"
 
@@ -39,6 +40,57 @@ def save_data(data):
 def credentials_exist(data):
     return data["HELPSCOUT_CLIENT_ID"] and data["HELPSCOUT_CLIENT_SECRET"]
 
+def json_exist():
+    csv_folder = "CSVs"
+    json_files = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
+    return len(json_files) == 3
+
+def create_csv_from_json_files():
+    if not json_exist():
+        return []
+
+    csv_folder = "CSVs"
+    json_files = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
+    
+    all_team_members = set()
+    all_data = {}
+    
+    for json_file in json_files:
+        file_path = os.path.join(csv_folder, json_file)
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            
+        for category, team_data in data.items():
+            if category in all_data:
+                for member, count in team_data.items():
+                    if member in all_data[category]:
+                        all_data[category][member] += count
+                    else:
+                        all_data[category][member] = count
+            else:
+                all_data[category] = team_data.copy()
+            
+            all_team_members.update(team_data.keys())
+    
+    sorted_team_members = sorted(list(all_team_members))
+    
+    csv_data = []
+
+    header = ["Product"] + sorted_team_members
+    csv_data.append(header)
+
+    for product in sorted(all_data.keys()):
+        row = [product]
+        team_data = all_data[product]
+
+        for member in sorted_team_members:
+            count = team_data.get(member, 0)
+            row.append(count)
+        
+        csv_data.append(row)
+    
+    return csv_data
+
 
 def create_flask_app():    
     app = Flask(__name__)
@@ -66,6 +118,24 @@ def create_flask_app():
     @app.route("/dashboard")
     def dashboard():
         return render_template("dashboard.html")
+
+    @app.route("/export")
+    def export_data():
+        try:
+            csv_data = create_csv_from_json_files()
+            
+            csv_filename = "cost_allocation_for_x.csv"
+            csv_path = os.path.join("CSVs", csv_filename)
+            
+            with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.writer(csvfile)
+                for row in csv_data:
+                    writer.writerow(row)
+            
+            return send_file(csv_path, as_attachment=True, download_name=csv_filename)
+            
+        except (FileNotFoundError, json.JSONDecodeError, IOError) as e:
+            return f"Error exporting data: {str(e)}", 500
 
     return app
 
