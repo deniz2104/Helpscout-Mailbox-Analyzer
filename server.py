@@ -1,9 +1,10 @@
-import os
+import os,signal
 import json
 import csv
 import webbrowser
 import calendar
 from threading import Timer
+from blinker import signal
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from config_loader import load_config
 from helper_file_to_get_last_month import get_last_month
@@ -115,6 +116,14 @@ def create_flask_app():
             return redirect(url_for("dashboard"))
 
         return render_template("form.html")
+    
+    @app.route('/shutdown', methods=['POST'])
+    def shutdown():
+        func = request.environ.get('werkzeug.server.shutdown')
+        if func is None:
+            os._exit(0)
+        func()
+        return "Server shutting down..."
 
     @app.route("/dashboard")
     def dashboard():
@@ -126,7 +135,7 @@ def create_flask_app():
             csv_data = create_csv_from_json_files()
 
             last_month = get_last_month()
-            csv_filename = f"cost_allocation_for_{calendar.month_name[last_month]}.csv"
+            csv_filename = f"cost_allocation_for_{calendar.month_name[last_month].lower()}.csv"
             csv_path = os.path.join("CSVs", csv_filename)
             
             with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
