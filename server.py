@@ -1,10 +1,9 @@
-import os,signal
+import os
 import json
 import csv
 import webbrowser
 import calendar
 from threading import Timer
-from blinker import signal
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from config_loader import load_config
 from helper_file_to_get_last_month import get_last_month
