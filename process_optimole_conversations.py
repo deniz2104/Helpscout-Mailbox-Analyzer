@@ -41,10 +41,10 @@ def main():
     result1 = processor.process_conversations()
     result2 = processor.categorise_filtered_conversations()
     
-    # Save results to JSON file for later retrieval
     os.makedirs("CSVs", exist_ok=True)
     with open("CSVs/process_optimole_results.json", "w", encoding="utf-8") as f:
-        json.dump(({"Wporg Optimole": result1}, result2), f, indent=2)
+        result2["Wporg Optimole"] = result1
+        json.dump(result2, f, indent=2)
 
 if __name__ == "__main__":
     main()
