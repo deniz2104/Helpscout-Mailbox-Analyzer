@@ -8,6 +8,12 @@
     <div class="container">
         <h2>Welcome to the Help Scout Dashboard</h2>
         <p>Your credentials have been saved successfully.</p>
+        
+        <div class="export-section">
+            <h3>Data Export</h3>
+            <p class="export-description">Export all JSON data to CSV format for analysis</p>
+            <button id="exportBtn" class="export-button">Export Data into a CSV</button>
+        </div>
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

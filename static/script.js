@@ -11,4 +11,19 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    const exportBtn = document.getElementById("exportBtn");
+    if (exportBtn) {
+        exportBtn.addEventListener("click", function() {
+            exportBtn.textContent = "Exporting...";
+            exportBtn.disabled = true;
+            
+            window.location.href = "/export";
+            
+            setTimeout(function() {
+                exportBtn.textContent = "Export Data into a CSV";
+                exportBtn.disabled = false;
+            }, 1000);
+        });
+    }
 });

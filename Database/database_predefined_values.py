@@ -38,7 +38,10 @@ def make_database_predefined_values():
             ("WP Landing Kit",["wp landing kit","wplandingkit"]),
             ("WP Media Library",["wp-media-library"]),
             ("Zelle Pro",["zelle-pro"]),
-            ("Zerif Pro",["zerif-pro"])
+            ("Zerif Pro",["zerif-pro"]),
+            ("Bundles",["themeisle-bundle","essential","business","vip","treasure chest lite","treasure chest","treasure chest plus","pirate club"]),
+            ("ShopIsle",["shopisle-pro","shop-isle-pro"]),
+            ("ROP",["rop-new-features","rop-new-feature-skip","rop-linkedin-403","rop-instagram","rop-api-issue","rop"])
         ]
 
         for name, tags in predefined:
