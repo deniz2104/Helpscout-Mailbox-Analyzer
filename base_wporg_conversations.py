@@ -8,11 +8,11 @@ from concurrent.futures import ThreadPoolExecutor
 
 class BaseConversations(ABC):
     def __init__(self, client_id, client_secret):
-        self.client_id = client_id
-        self.client_secret = client_secret
+        self.client_id : str = client_id
+        self.client_secret : str = client_secret
         self.core_system_helper = CoreSystem(client_id, client_secret)
-        self.dict_of_usernames = {}
-    
+        self.dict_of_usernames : dict[str, str] = {}
+
     @property
     @abstractmethod
     def processed_file(self) -> str:
@@ -35,22 +35,22 @@ class BaseConversations(ABC):
     def _should_process_thread(self, thread: dict) -> bool:
         """Determine if a thread should be processed based on specific criteria."""
         return thread.get('type') == 'customer'
-    
-    def _get_threads(self, conversation_id):
+
+    def _get_threads(self, conversation_id: int) -> Optional[dict]:
         """Get threads for a conversation."""
         return self.core_system_helper.make_request(f"conversations/{conversation_id}/threads")
 
-    def _load_usernames_from_config(self):
+    def _load_usernames_from_config(self) -> list[str]:
         """Load usernames from config using the specific config key."""
         from config_loader import load_config
         config = load_config()
         return list(config.get(self.config_usernames_key, {}).keys())
 
-    def process_conversations(self):
-        usernames = set(self._load_usernames_from_config())
-        conversation_ids = export_csv_to_list(self.processed_file)
+    def process_conversations(self) -> dict[str | None, int]:
+        usernames : set[str] = set(self._load_usernames_from_config())
+        conversation_ids : list[int] = export_csv_to_list(self.processed_file)
 
-        def process_single_conversation(conv_id):
+        def process_single_conversation(conv_id: int) -> list[str | None]:
             threads = self._get_threads(conv_id)
             if not threads or '_embedded' not in threads:
                 return []

@@ -5,10 +5,10 @@ def get_connection():
     return sqlite3.connect(database=DB_FILE)
 
 def initialize_database():
-    connection = get_connection()
+    connection : sqlite3.Connection = get_connection()
     if connection is None:
         raise Exception("Failed to connect to the database.")
-    cursor = connection.cursor()
+    cursor : sqlite3.Cursor = connection.cursor()
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS products (

@@ -1,14 +1,15 @@
+import sqlite3
 from Database.database_schema import get_connection
 
 def make_database_predefined_values():
-    connection=get_connection()
-    cursor= connection.cursor()
+    connection :sqlite3.Connection=get_connection()
+    cursor : sqlite3.Cursor = connection.cursor()
 
     cursor.execute("SELECT COUNT(*) FROM products")
     product_count = cursor.fetchone()[0]
 
     if product_count == 0:
-        predefined =[
+        predefined : list[tuple[str, list[str]]] =[
             ("Neve",["neve", "neve-pro","neve pro (plugin)"]),
             ("Hestia",["hestia","hestia-pro"]),
             ("Feedzy",["feedzy"]),

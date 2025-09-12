@@ -1,4 +1,4 @@
-from typing import List
+from typing import Optional
 import concurrent.futures
 from core_system import CoreSystem
 from helper_file_to_export_csvs_to_list import export_csv_to_list
@@ -10,13 +10,13 @@ class FilterOptimoleConversations:
         self.ids_file = 'CSVs/filtered_optimole_conversations_ids.csv'
         self.core_system_helper = CoreSystem(client_id, client_secret)
         config = load_config()
-        self.team_members = list(config.get("TEAM_MEMBERS", {}).values())
-        self.max_workers = 10
+        self.team_members : list[str] = list(config.get("TEAM_MEMBERS", {}).values())
+        self.max_workers : int = 10
 
-    def _get_threads(self, conversation_id):
+    def _get_threads(self, conversation_id: int) -> Optional[dict]:
         return self.core_system_helper.make_request(f"conversations/{conversation_id}/threads")
 
-    def _check_conversation_for_replies(self, conversation_id):
+    def _check_conversation_for_replies(self, conversation_id: int) -> Optional[int]:
         threads = self._get_threads(conversation_id)
         if not threads or '_embedded' not in threads:
             print(f"No threads found for conversation ID {conversation_id}")
@@ -29,8 +29,8 @@ class FilterOptimoleConversations:
                 return conversation_id
         return None
 
-    def has_conversation_replies(self) -> List[str]:
-        conversation_ids = export_csv_to_list(self.ids_file)
+    def has_conversation_replies(self) -> list[str]:
+        conversation_ids : list[int] = export_csv_to_list(self.ids_file)
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             results = executor.map(self._check_conversation_for_replies, conversation_ids)
 
