@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, List, Any, Callable
+from typing import Optional,Any, Callable
 import csv
 import os
 from datetime import datetime
@@ -42,7 +42,7 @@ class MailboxBase(ABC):
         """Convert ISO format date to YYYY-MM-DD HH:MM:SS format."""
         return datetime.fromisoformat(creation_date).strftime("%Y-%m-%d %H:%M:%S")
 
-    def export_list_to_csv(self, data: List[Any], header: List[str], file_path: str, write_header: bool = False) -> None:
+    def export_list_to_csv(self, data: list[Any], header: list[str], file_path: str, write_header: bool = False) -> None:
         """Export a list of data to a CSV file."""
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
@@ -53,17 +53,17 @@ class MailboxBase(ABC):
                 writer.writerow(header)
             writer.writerows(data)
 
-    def _process_conversations_in_range(self, start_date: str, end_date: str, process_func: Callable[[List[dict], bool], None]):
+    def _process_conversations_in_range(self, start_date: str, end_date: str, process_func: Callable[[list[dict], bool], None]):
         """Iterates through conversations and processes them if they are within the date range."""
         page = 1
         is_first_page_write = True
 
         while True:
-            conversations_data = self._get_conversations_page(page_number=page)
+            conversations_data : dict = self._get_conversations_page(page_number=page)
             if conversations_data is None:
                 print(f"Warning: Could not retrieve conversations for page {page}")
                 break
-            conversations = conversations_data.get('_embedded', {}).get('conversations', [])
+            conversations :list[dict] = conversations_data.get('_embedded', {}).get('conversations', [])
 
             if not conversations:
                 break
@@ -79,13 +79,13 @@ class MailboxBase(ABC):
                 break
 
             if is_first_page_write:
-                conversation_ids = [conv['id'] for conv in conversations]
+                conversation_ids :list[int] = [conv['id'] for conv in conversations]
                 valid_ids = []
                 for conv_id in conversation_ids:
                     creation_date = self.get_creation_date(conv_id)
                     if creation_date and start_date < creation_date < end_date:
                         valid_ids.append(conv_id)
-                conversations_to_process = [conv for conv in conversations if conv['id'] in valid_ids]
+                conversations_to_process :list[dict] = [conv for conv in conversations if conv['id'] in valid_ids]
 
                 if conversations_to_process:
                     process_func(conversations_to_process, is_first_page_write)
@@ -98,7 +98,7 @@ class MailboxBase(ABC):
             page += 1
 
     def get_creation_date(self, conversation_id: int) -> Optional[str]:
-        conversation_data = self._get_conversation_data(conversation_id)
+        conversation_data :dict = self._get_conversation_data(conversation_id)
         if conversation_data is None:
             print(f"Warning: Could not retrieve data for conversation {conversation_id}")
             return None
@@ -108,8 +108,8 @@ class MailboxBase(ABC):
     def analyze_last_month_tags(self) -> None:
         start_date, end_date = get_last_month_dates()
 
-        def process_and_export_tags(conversations: List[dict], write_header: bool):
-            tags_data = [[tag['tag'] for tag in conv.get('tags', [])] for conv in conversations]
+        def process_and_export_tags(conversations: list[dict], write_header: bool):
+            tags_data :list[list[str]] = [[tag['tag'] for tag in conv.get('tags', [])] for conv in conversations]
             self.export_list_to_csv(tags_data, ['Tags'], self.csv_filename, write_header)
         
         self._process_conversations_in_range(start_date, end_date, process_and_export_tags)
@@ -117,8 +117,8 @@ class MailboxBase(ABC):
     def analyze_last_month_conversations(self) -> None:
         start_date, end_date = get_last_month_dates()
 
-        def process_and_export_ids(conversations: List[dict], write_header: bool):
-            ids_data = [[conv['id']] for conv in conversations]
+        def process_and_export_ids(conversations: list[dict], write_header: bool):
+            ids_data :list[list[int]] = [[conv['id']] for conv in conversations]
             self.export_list_to_csv(ids_data, ['Conversation ID'], self.csv_filename, write_header)
 
         self._process_conversations_in_range(start_date, end_date, process_and_export_ids)

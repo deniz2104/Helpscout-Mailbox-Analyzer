@@ -1,5 +1,6 @@
 from mailbox_base import MailboxBase
 from config_loader import get_helpscout_credentials, load_config
+
 class HelpscoutFreeMailboxTags(MailboxBase):
     @property
     def mailbox_id(self) -> int:

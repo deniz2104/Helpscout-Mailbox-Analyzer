@@ -11,7 +11,7 @@ from helper_file_to_get_last_month import get_last_month
 DATA_FILE = "config.json"
 config = load_config()
 
-def load_data():
+def load_data() -> dict:
     if not os.path.exists(DATA_FILE):
         default_data = {
             "HELPSCOUT_CLIENT_ID": "",
@@ -37,32 +37,32 @@ def load_data():
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def save_data(data):
+def save_data(data: dict) -> None:
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
-def credentials_exist(data):
+def credentials_exist(data: dict) -> bool:
     return data["HELPSCOUT_CLIENT_ID"] and data["HELPSCOUT_CLIENT_SECRET"]
 
-def json_exist():
+def json_exist() -> bool:
     csv_folder = "CSVs"
     json_files = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
     return len(json_files) == 3
 
-def create_csv_from_json_files():
+def create_csv_from_json_files() -> list[list[str]]:
     if not json_exist():
         return []
 
     csv_folder = "CSVs"
-    json_files = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
+    json_files :list[str] = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
 
     all_data = {}
     
     for json_file in json_files:
         file_path = os.path.join(csv_folder, json_file)
         with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            
+            data :dict = json.load(f)
+
         for category, team_data in data.items():
             if category in all_data:
                 for member, count in team_data.items():
@@ -73,11 +73,10 @@ def create_csv_from_json_files():
             else:
                 all_data[category] = team_data.copy()
 
-    sorted_team_members = sorted(list(config.get("TEAM_MEMBERS", {}).values()))
+    sorted_team_members :list[str] = sorted(list(config.get("TEAM_MEMBERS", {}).values()))
 
     csv_data = []
-
-    header = ["Product"] + sorted_team_members
+    header :list[str] = ["Product"] + sorted_team_members
     csv_data.append(header)
 
     for product in sorted(all_data.keys()):

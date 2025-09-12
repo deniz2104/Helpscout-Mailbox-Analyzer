@@ -1,7 +1,6 @@
 import asyncio
 import time
 
-
 async def run_single_command(cmd: str):
     start_time = time.time()
 

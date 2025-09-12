@@ -7,21 +7,20 @@ from helper_file_to_export_csvs_to_list import export_csv_to_list
 from Database.database_schema import get_connection
 from get_last_month_dates import get_last_month_dates
 
-
 class ConversationTagBase(ABC):
-    def __init__(self, client_id: str, client_secret: str):
-        self.client_id = client_id
-        self.client_secret = client_secret
+    def __init__(self, client_id, client_secret):
+        self.client_id :str = client_id
+        self.client_secret : str= client_secret
         self.dictionary_of_tag_and_names = defaultdict(lambda: defaultdict(int))
 
         config = load_config()
-        self.team_members = set(config.get("TEAM_MEMBERS", {}).values())
+        self.team_members :set[str] = set(config.get("TEAM_MEMBERS", {}).values())
 
         self.core_system_helper = self._get_core_system_helper()
 
         start_str, end_str = get_last_month_dates()
-        self.start_date = datetime.strptime(start_str, "%Y-%m-%d %H:%M:%S")
-        self.end_date = datetime.strptime(end_str, "%Y-%m-%d %H:%M:%S")
+        self.start_date : datetime = datetime.strptime(start_str, "%Y-%m-%d %H:%M:%S")
+        self.end_date : datetime = datetime.strptime(end_str, "%Y-%m-%d %H:%M:%S")
 
     def _parse_helpscout_date(self, date_str: str) -> datetime:
         date_str = date_str.rstrip("Z")
@@ -40,13 +39,13 @@ class ConversationTagBase(ABC):
     def processed_file_for_tags(self) -> str:
         pass
 
-    def _get_threads(self, conversation_id: str) -> Optional[dict]:
+    def _get_threads(self, conversation_id: int) -> Optional[dict]:
         return self.core_system_helper.make_request(
             f"conversations/{conversation_id}/threads"
         )
 
     def _check_conversation_for_replies(
-        self, dictionary_of_tags_and_names: dict, conversation_id: str, product_or_plugin: Optional[str] = None
+        self, dictionary_of_tags_and_names: dict, conversation_id: int, product_or_plugin: Optional[str] = None
     ) -> None:
         threads = self._get_threads(conversation_id)
         if not threads or "_embedded" not in threads:
@@ -107,7 +106,7 @@ class ConversationTagBase(ABC):
         return [tag["tag"] for tag in conversation.get("tags", []) if "tag" in tag]
 
     def categorise_filtered_conversations(self) -> dict:
-        filtered_ids = export_csv_to_list(self.processed_file_for_tags)
+        filtered_ids : list[int] = export_csv_to_list(self.processed_file_for_tags)
 
         for conv_id in filtered_ids:
             conversation_data = self._get_conversation_data(conv_id)
@@ -115,8 +114,8 @@ class ConversationTagBase(ABC):
                 print(f"No data found for conversation {conv_id}")
                 continue
 
-            tags_of_the_conversation = self._get_tags_from_conversation(conversation_data)
-            product_name = self._validate_tag(tags_of_the_conversation)
+            tags_of_the_conversation : list[str] = self._get_tags_from_conversation(conversation_data)
+            product_name : str | None = self._validate_tag(tags_of_the_conversation)
 
             self._check_conversation_for_replies(
                 self.dictionary_of_tag_and_names,
