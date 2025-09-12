@@ -5,6 +5,7 @@ from typing import Optional
 from base_wporg_conversations import BaseConversations
 from config_loader import get_helpscout_credentials
 from conversation_tag_base import ConversationTagBase
+from helper_file_to_change_keys_from_wporg_username_to_team_member_names import map_wporg_usernames_to_names
 
 class ProcessOptimoleConversations(BaseConversations, ConversationTagBase):
     def __init__(self, client_id: str, client_secret: str):
@@ -12,7 +13,7 @@ class ProcessOptimoleConversations(BaseConversations, ConversationTagBase):
         ConversationTagBase.__init__(self, client_id, client_secret)
 
     def _get_core_system_helper(self):
-        return self.core_system_helper  # Already initialized in BaseConversations
+        return self.core_system_helper
 
     @property
     def processed_file(self) -> str:
@@ -40,10 +41,12 @@ def main():
     processor = ProcessOptimoleConversations(client_id, client_secret)
     result1 = processor.process_conversations()
     result2 = processor.categorise_filtered_conversations()
-    
+
+    mapped_result = map_wporg_usernames_to_names(result1)
+
     os.makedirs("CSVs", exist_ok=True)
     with open("CSVs/process_optimole_results.json", "w", encoding="utf-8") as f:
-        result2["Wporg Optimole"] = result1
+        result2["Wporg Optimole"] = mapped_result
         json.dump(result2, f, indent=2)
 
 if __name__ == "__main__":

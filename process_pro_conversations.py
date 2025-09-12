@@ -27,7 +27,6 @@ def main():
     processor = ProcessProConversations(client_id, client_secret)
     result = processor.categorise_filtered_conversations()
     
-    # Save results to JSON file for later retrieval
     os.makedirs("CSVs", exist_ok=True)
     with open("CSVs/process_pro_results.json", "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)

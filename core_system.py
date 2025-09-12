@@ -51,13 +51,13 @@ class CoreSystem:
                 if response.status_code == 200:
                     return response.json()
                 elif response.status_code == 429:
-                    wait_time = 0.6 + (attempt * 0.2) + random.uniform(0, 0.3)
+                    wait_time = 0.7 + (attempt * 0.2) + random.uniform(0, 0.3)
                     print(f"Rate limited, waiting {wait_time:.1f}s before retry {attempt + 1}/{max_retries}")
                     time.sleep(wait_time)
                     continue
                 elif response.status_code in [500, 502, 503, 504]:
                     if attempt < max_retries:
-                        wait_time = 0.6 + (attempt * 0.2) + random.uniform(0, 0.3)
+                        wait_time = 0.7 + (attempt * 0.2) + random.uniform(0, 0.3)
                         print(f"Server error {response.status_code}, retrying in {wait_time:.1f}s")
                         time.sleep(wait_time)
                         continue
@@ -70,7 +70,7 @@ class CoreSystem:
                     
             except requests.exceptions.RequestException as e:
                 if attempt < max_retries:
-                    wait_time = 0.6 + (attempt * 0.2) + random.uniform(0, 0.3)
+                    wait_time = 0.7 + (attempt * 0.2) + random.uniform(0, 0.3)
                     print(f"Request failed: {e}, retrying in {wait_time:.1f}s")
                     time.sleep(wait_time)
                     continue

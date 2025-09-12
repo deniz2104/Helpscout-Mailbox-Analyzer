@@ -2,10 +2,14 @@ import os
 import json
 import csv
 import webbrowser
+import calendar
 from threading import Timer
 from flask import Flask, render_template, request, redirect, url_for, send_file
+from config_loader import load_config
+from helper_file_to_get_last_month import get_last_month
 
 DATA_FILE = "config.json"
+config = load_config()
 
 def load_data():
     if not os.path.exists(DATA_FILE):
@@ -51,8 +55,7 @@ def create_csv_from_json_files():
 
     csv_folder = "CSVs"
     json_files = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
-    
-    all_team_members = set()
+
     all_data = {}
     
     for json_file in json_files:
@@ -69,11 +72,9 @@ def create_csv_from_json_files():
                         all_data[category][member] = count
             else:
                 all_data[category] = team_data.copy()
-            
-            all_team_members.update(team_data.keys())
-    
-    sorted_team_members = sorted(list(all_team_members))
-    
+
+    sorted_team_members = sorted(list(config.get("TEAM_MEMBERS", {}).values()))
+
     csv_data = []
 
     header = ["Product"] + sorted_team_members
@@ -123,8 +124,9 @@ def create_flask_app():
     def export_data():
         try:
             csv_data = create_csv_from_json_files()
-            
-            csv_filename = "cost_allocation_for_x.csv"
+
+            last_month = get_last_month()
+            csv_filename = f"cost_allocation_for_{calendar.month_name[last_month]}.csv"
             csv_path = os.path.join("CSVs", csv_filename)
             
             with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:

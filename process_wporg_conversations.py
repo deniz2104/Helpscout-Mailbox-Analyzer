@@ -2,6 +2,7 @@ import json
 import os
 from base_wporg_conversations import BaseConversations
 from config_loader import get_helpscout_credentials
+from helper_file_to_change_keys_from_wporg_username_to_team_member_names import map_wporg_usernames_to_names
 
 class ProcessWPOrgConversations(BaseConversations):
     @property
@@ -17,10 +18,11 @@ def main():
     processor = ProcessWPOrgConversations(client_id, client_secret)
     result = processor.process_conversations()
     
-    # Save results to JSON file for later retrieval
+    mapped_result = map_wporg_usernames_to_names(result)
+    
     os.makedirs("CSVs", exist_ok=True)
     with open("CSVs/process_wporg_results.json", "w", encoding="utf-8") as f:
-        json.dump({"Wporg": result}, f, indent=2)
+        json.dump({"Wporg": mapped_result}, f, indent=2)
 
 if __name__ == "__main__":
     main()

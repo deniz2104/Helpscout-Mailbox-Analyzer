@@ -44,8 +44,8 @@ class BaseConversations(ABC):
         """Load usernames from config using the specific config key."""
         from config_loader import load_config
         config = load_config()
-        return list(config.get(self.config_usernames_key, {}).values())
-    
+        return list(config.get(self.config_usernames_key, {}).keys())
+
     def process_conversations(self):
         usernames = set(self._load_usernames_from_config())
         conversation_ids = export_csv_to_list(self.processed_file)
