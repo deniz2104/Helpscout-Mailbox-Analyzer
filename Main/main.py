@@ -31,31 +31,31 @@ async def run_with_staged_execution():
     overall_start = time.time()
 
     await run_command_group("Stage 1 - Free Mailbox Operations", [
-        "python helpscout_free_mailbox.py",
-        "python helpscout_free_mailbox_tags.py"
+        "python HelpscoutMailboxes/helpscout_free_mailbox.py",
+        "python HelpscoutMailboxes/helpscout_free_mailbox_tags.py"
     ])
 
     print("\n🔄 Starting Stage 2 - Pro and Optimole Mailbox Operations...")
 
     async def pro_chain():
-        await run_single_command("python helpscout_pro_mailbox.py")
-        await run_single_command("python process_pro_conversations.py")
+        await run_single_command("python HelpscoutMailboxes/helpscout_pro_mailbox.py")
+        await run_single_command("python ProcessMailboxes/process_pro_conversations.py")
 
     stage2_tasks = [
-        asyncio.create_task(run_single_command("python helpscout_optimole_mailbox.py")),
+        asyncio.create_task(run_single_command("python HelpscoutMailboxes/helpscout_optimole_mailbox.py")),
         asyncio.create_task(pro_chain())
     ]
     await asyncio.gather(*stage2_tasks, return_exceptions=True)
 
     await run_command_group("Stage 3 - Remaining Tasks", [
-        "python filter_wporg_conversations.py",
-        "python filter_optimole_conversations.py"
+        "python FilterMailboxes/filter_wporg_conversations.py",
+        "python FilterMailboxes/filter_optimole_conversations.py"
     ])
 
     await run_command_group("Stage 4 - Final Processing", [
-        "python helper_file_to_see_no_replies_emails_in_optimole.py",
-        "python process_optimole_conversations.py",
-        "python process_wporg_conversations.py",
+        "python HelperFiles/helper_file_to_see_no_replies_emails_in_optimole.py",
+        "python ProcessMailboxes/process_optimole_conversations.py",
+        "python ProcessMailboxes/process_wporg_conversations.py",
     ])
 
     print(f"\n🎉 Pipeline completed in {time.time() - overall_start:.1f}s")

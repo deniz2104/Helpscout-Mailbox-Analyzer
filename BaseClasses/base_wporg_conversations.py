@@ -42,7 +42,7 @@ class BaseConversations(ABC):
 
     def _load_usernames_from_config(self) -> list[str]:
         """Load usernames from config using the specific config key."""
-        from JSONLoading.config_loader import load_config
+        from CredentialsAndJsonManager.config_loader import load_config
         config = load_config()
         return list(config.get(self.config_usernames_key, {}).keys())
 
