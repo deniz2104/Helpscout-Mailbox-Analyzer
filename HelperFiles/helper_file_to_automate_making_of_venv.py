@@ -3,6 +3,7 @@ import subprocess
 import venv
 
 def create_and_setup_venv(venv_dir="venv", requirements_file="requirements.txt"):
+    """Create a virtual environment and install dependencies."""
     if not os.path.exists(venv_dir):
         print(f"Creating virtual environment in '{venv_dir}'...")
         venv.EnvBuilder(with_pip=True).create(venv_dir)

@@ -6,6 +6,9 @@ from typing import Optional
 from APIConnection.get_access_token import GetAccessToken
 
 class CoreSystem:
+    """
+    Core system for making API requests with rate limiting and retries.
+    """
     _last_request_time = 0
     _request_lock = Lock()
     _min_request_interval = 0.01
@@ -19,6 +22,9 @@ class CoreSystem:
         self.base_url :str = "https://api.helpscout.net/v2"
 
     def _rate_limit(self):
+        """
+        Ensures that requests are spaced out to avoid hitting rate limits.
+        """
         with CoreSystem._request_lock:
             current_time = time.time()
             time_since_last = current_time - CoreSystem._last_request_time
@@ -30,6 +36,7 @@ class CoreSystem:
             CoreSystem._last_request_time = time.time()
 
     def make_request(self, endpoint: str, params: Optional[dict] = None, max_retries: int = 3) -> Optional[dict]:
+        """Makes a GET request to the specified API endpoint with retries and rate limiting."""
         if not self.token_manager.ensure_valid_token():
             print("ERROR: Failed to get valid token")
             return None

@@ -2,6 +2,7 @@ import json
 import os
 
 def load_config() -> dict:
+    """Load configuration from config.json file."""
     config_file  = "config.json"
 
     if not os.path.exists(config_file):
@@ -11,6 +12,7 @@ def load_config() -> dict:
         return json.load(f)
 
 def get_helpscout_credentials() -> tuple[str, str]:
+    """Retrieve Helpscout API credentials from config."""
     config = load_config()
     client_id : str = config.get("HELPSCOUT_CLIENT_ID")
     client_secret : str = config.get("HELPSCOUT_CLIENT_SECRET")

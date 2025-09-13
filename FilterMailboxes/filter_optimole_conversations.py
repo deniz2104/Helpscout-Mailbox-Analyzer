@@ -14,9 +14,11 @@ class FilterOptimoleConversations:
         self.max_workers : int = 10
 
     def _get_threads(self, conversation_id: int) -> Optional[dict]:
+        """Get threads for a conversation."""
         return self.core_system_helper.make_request(f"conversations/{conversation_id}/threads")
 
     def _check_conversation_for_replies(self, conversation_id: int) -> Optional[int]:
+        """Check if any thread in the conversation has a reply from a team member."""
         threads = self._get_threads(conversation_id)
         if not threads or '_embedded' not in threads:
             print(f"No threads found for conversation ID {conversation_id}")
@@ -30,6 +32,7 @@ class FilterOptimoleConversations:
         return None
 
     def has_conversation_replies(self) -> list[int]:
+        """Check a list of conversation IDs for replies from team members."""
         conversation_ids : list[int] = export_csv_to_list(self.ids_file)
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             results = executor.map(self._check_conversation_for_replies, conversation_ids)

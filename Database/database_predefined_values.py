@@ -2,6 +2,7 @@ import sqlite3
 from Database.database_schema import get_connection
 
 def make_database_predefined_values():
+    """Populate the database with predefined products and tags if empty."""
     connection :sqlite3.Connection=get_connection()
     cursor : sqlite3.Cursor = connection.cursor()
 
@@ -44,7 +45,8 @@ def make_database_predefined_values():
             ("ShopIsle",["shopisle-pro","shop-isle-pro"]),
             ("ROP",["rop-new-features","rop-new-feature-skip","rop-linkedin-403","rop-instagram","rop-api-issue","rop"])
         ]
-
+        
+        """ Insert predefined products and tags into the database """
         for name, tags in predefined:
             cursor.execute("INSERT INTO products (name) VALUES (?)", (name,))
             product_id = cursor.lastrowid

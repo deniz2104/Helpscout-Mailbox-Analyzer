@@ -9,6 +9,7 @@ class FilterWporgConversations():
         self.output_file = 'CSVs/filtered_wporg_conversations.csv'
 
     def _read_csv(self, file_path: str, is_tags: bool = False) -> list[int] | list[str]:
+        """Read a CSV file and return a list of integers or strings based on the is_tags flag."""
         data_list = []
         try:
             with open(file_path, 'r', newline='', encoding='utf-8') as f:
@@ -24,6 +25,7 @@ class FilterWporgConversations():
         return data_list
 
     def _get_conversation_data(self) -> tuple[list[int], list[str]]:
+        """Retrieve conversation IDs and their corresponding tags from CSV files."""
         conversation_ids: list[int] = self._read_csv(self.ids_file)  # type: ignore
         tags_list: list[str] = self._read_csv(self.tags_file, is_tags=True)  # type: ignore
 
@@ -34,9 +36,11 @@ class FilterWporgConversations():
         return conversation_ids[:min_length], tags_list[:min_length]
 
     def _filter_by_tag(self, conversation_ids: list[int], tags_list: list[str]) -> list[int]:
+        """Filter conversation IDs based on the presence of the target tag."""
         return [conv_id for conv_id, tags in zip(conversation_ids, tags_list) if self.target_tag in tags]
 
     def process_and_export(self) -> None:
+        """Process conversations and export filtered IDs to a CSV file."""
         conversation_ids, tags_list = self._get_conversation_data()
         
         if not conversation_ids or not tags_list:

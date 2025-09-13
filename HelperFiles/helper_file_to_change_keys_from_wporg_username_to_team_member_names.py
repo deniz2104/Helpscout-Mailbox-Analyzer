@@ -1,5 +1,6 @@
 import json
 def map_wporg_usernames_to_names(result_dict, config_file="config.json") -> dict[str, int]:
+    """Map WP.org usernames to team member names using the provided config file."""
     with open(config_file, 'r', encoding='utf-8') as f:
         config = json.load(f)
 

@@ -2,6 +2,7 @@ import asyncio
 import time
 
 async def run_single_command(cmd: str):
+    """Run a single shell command asynchronously and log its execution time."""
     start_time = time.time()
 
     process = await asyncio.create_subprocess_shell(
@@ -19,6 +20,7 @@ async def run_single_command(cmd: str):
         print(f"  ✅ {cmd} completed in {execution_time:.1f}s")
 
 async def run_command_group(group_name: str, commands: list[str]):
+    """Run a group of commands asynchronously and log the total execution time."""
     start_time = time.time()
 
     tasks = [asyncio.create_task(run_single_command(cmd)) for cmd in commands]
@@ -28,6 +30,7 @@ async def run_command_group(group_name: str, commands: list[str]):
     print(f"✅ {group_name} completed in {total_time:.1f}s")
 
 async def run_with_staged_execution():
+    """Run the entire pipeline with staged execution and parallel tasks where applicable."""
     overall_start = time.time()
 
     await run_command_group("Stage 1 - Free Mailbox Operations", [

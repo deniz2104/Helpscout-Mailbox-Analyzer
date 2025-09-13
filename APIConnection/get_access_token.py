@@ -9,6 +9,7 @@ class GetAccessToken():
         self.base_url :str = "https://api.helpscout.net/v2"
 
     def get_access_token(self):
+        """Fetches a new access token using client credentials."""
         token_url = f"{self.base_url}/oauth2/token"
 
         data : dict[str, str] = {
@@ -28,6 +29,7 @@ class GetAccessToken():
             return False
 
     def ensure_valid_token(self):
+        """Ensures that there is a valid access token."""
         if not self.access_token:
             return self.get_access_token()
         return True

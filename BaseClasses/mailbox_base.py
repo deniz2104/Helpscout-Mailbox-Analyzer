@@ -59,6 +59,7 @@ class MailboxBase(ABC):
         is_first_page_write = True
 
         while True:
+            """ Fetch a page of conversations """
             conversations_data : Optional[dict] = self._get_conversations_page(page_number=page)
             if conversations_data is None:
                 print(f"Warning: Could not retrieve conversations for page {page}")
@@ -66,8 +67,9 @@ class MailboxBase(ABC):
             conversations :list[dict] = conversations_data.get('_embedded', {}).get('conversations', [])
 
             if not conversations:
-                break
-
+                break 
+            
+            """ Check the date range of the conversations on this page """
             latest_conv_date = self.get_creation_date(conversations[0]['id'])
             earliest_conv_date = self.get_creation_date(conversations[-1]['id'])
 
@@ -77,7 +79,8 @@ class MailboxBase(ABC):
             
             if earliest_conv_date and earliest_conv_date < start_date:
                 break
-
+            
+            """ Process conversations within the date range """
             if is_first_page_write:
                 conversation_ids :list[int] = [conv['id'] for conv in conversations]
                 valid_ids = []
@@ -87,6 +90,7 @@ class MailboxBase(ABC):
                         valid_ids.append(conv_id)
                 conversations_to_process :list[dict] = [conv for conv in conversations if conv['id'] in valid_ids]
 
+                """ Check if there are conversations to process """
                 if conversations_to_process:
                     process_func(conversations_to_process, is_first_page_write)
                     is_first_page_write = False
@@ -94,10 +98,12 @@ class MailboxBase(ABC):
                 page += 1
                 continue
 
+            """ Process all conversations on this page """
             process_func(conversations, is_first_page_write)
             page += 1
-
+    
     def get_creation_date(self, conversation_id: int) -> Optional[str]:
+        """Retrieve and convert the creation date of a conversation."""
         conversation_data :Optional[dict] = self._get_conversation_data(conversation_id)
         if conversation_data is None:
             print(f"Warning: Could not retrieve data for conversation {conversation_id}")
@@ -106,6 +112,7 @@ class MailboxBase(ABC):
         return self._convert_creation_date(created_at) if created_at else None
 
     def analyze_last_month_tags(self) -> None:
+        """Analyze and export tags from conversations in the last month."""
         start_date, end_date = get_last_month_dates()
 
         def process_and_export_tags(conversations: list[dict], write_header: bool):
@@ -115,6 +122,7 @@ class MailboxBase(ABC):
         self._process_conversations_in_range(start_date, end_date, process_and_export_tags)
 
     def analyze_last_month_conversations(self) -> None:
+        """Analyze and export conversation IDs from the last month."""
         start_date, end_date = get_last_month_dates()
 
         def process_and_export_ids(conversations: list[dict], write_header: bool):

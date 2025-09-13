@@ -2,6 +2,7 @@ import csv
 import os
 
 def make_csv(data_list: list[int], output_file: str, header: str = 'Conversation ID') -> None:
+    """Create a CSV file from a list of integers."""
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
     with open(output_file, 'w', newline='', encoding='utf-8') as f:

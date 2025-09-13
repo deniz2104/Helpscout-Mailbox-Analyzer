@@ -47,6 +47,7 @@ class BaseConversations(ABC):
         return list(config.get(self.config_usernames_key, {}).keys())
 
     def process_conversations(self) -> dict[str | None, int]:
+        """Process conversations to extract and count usernames."""
         usernames : set[str] = set(self._load_usernames_from_config())
         conversation_ids : list[int] = export_csv_to_list(self.processed_file)
 
@@ -60,6 +61,7 @@ class BaseConversations(ABC):
                 if self._should_process_thread(thread) and 'body' in thread
             ]
 
+        """ Use ThreadPoolExecutor to process conversations concurrently """
         with ThreadPoolExecutor(max_workers=8) as executor:
             results = executor.map(process_single_conversation, conversation_ids)
 

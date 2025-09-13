@@ -12,6 +12,7 @@ DATA_FILE = "config.json"
 config = load_config()
 
 def load_data() -> dict:
+    """Load configuration data from config.json, creating it with default values if it doesn't exist."""
     if not os.path.exists(DATA_FILE):
         default_data = {
             "HELPSCOUT_CLIENT_ID": "",
@@ -38,18 +39,22 @@ def load_data() -> dict:
         return json.load(f)
 
 def save_data(data: dict) -> None:
+    """Save configuration data to config.json."""
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
 def credentials_exist(data: dict) -> bool:
+    """Check if Helpscout credentials exist in the provided data dictionary."""
     return data["HELPSCOUT_CLIENT_ID"] and data["HELPSCOUT_CLIENT_SECRET"]
 
 def json_exist() -> bool:
+    """Check if the required JSON files exist in the CSVs directory to make the final CSV."""
     csv_folder = "CSVs"
     json_files = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
     return len(json_files) == 3
 
 def create_csv_from_json_files() -> list[list[str]]:
+    """CreateCSV data list from existing JSON files."""
     if not json_exist():
         return []
 
@@ -98,6 +103,7 @@ def create_flask_app():
     
     @app.route("/", methods=["GET", "POST"])
     def index():
+        """Handle the index route for displaying and submitting Helpscout credentials."""
         data = load_data()
 
         if credentials_exist(data):
@@ -121,6 +127,7 @@ def create_flask_app():
 
     @app.route("/export")
     def export_data():
+        """Export data from JSON files to a CSV and provide it for download."""
         try:
             csv_data = create_csv_from_json_files()
 
@@ -144,6 +151,7 @@ if __name__ == "__main__":
     port = 5001
     url = f"http://127.0.0.1:{port}/"
 
+    """Open the default web browser to the Flask app URL after a short delay."""
     def open_browser():
         webbrowser.open(url)
 

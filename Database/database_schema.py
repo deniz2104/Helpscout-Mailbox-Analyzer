@@ -5,6 +5,7 @@ def get_connection():
     return sqlite3.connect(database=DB_FILE)
 
 def initialize_database():
+    """Initialize the database with required tables."""
     connection : sqlite3.Connection = get_connection()
     if connection is None:
         raise Exception("Failed to connect to the database.")

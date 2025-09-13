@@ -2,6 +2,7 @@ import csv
 import os
 
 def export_csv_to_list(file_path: str) -> list:
+    """Export a single-column CSV file to a list."""
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     
     data_list = []
