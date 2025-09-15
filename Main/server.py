@@ -9,6 +9,9 @@ from CredentialsAndJsonManager.config_loader import load_config
 from HelperFiles.helper_file_to_get_last_month import get_last_month
 
 DATA_FILE = "config.json"
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+DATA_FILE = os.path.join(PROJECT_ROOT, "config.json")
+CSV_FOLDER = os.path.join(PROJECT_ROOT, "CSVs")
 
 def load_data() -> dict:
     """Load configuration data from config.json, creating it with default values if it doesn't exist."""
@@ -23,10 +26,10 @@ def load_data() -> dict:
                 "Stefan": "Stefan Cotitosu"
             },
             "WP_ORG_USERNAMES": {
-                "rodicaelena": "Rodica",
-                "Kush": "Kush",
-                "Poonam Namdev": "Poonam",
-                "Stefan Cotitosu": "Stefan",
+                "rodicaelena": "Rodica Irodiu",
+                "Kush": "Kush Namdev",
+                "Poonam Namdev": "Poonam Namdev",
+                "Stefan Cotitosu": "Stefan Cotitosu",
             },
             "MAILBOX_PRO_ID": 21530,
             "MAILBOX_FREE_ID": 77254,
@@ -48,7 +51,7 @@ def credentials_exist(data: dict) -> bool:
 
 def json_exist() -> bool:
     """Check if the required JSON files exist in the CSVs directory to make the final CSV."""
-    csv_folder = "CSVs"
+    csv_folder = CSV_FOLDER
     if not os.path.exists(csv_folder):
         return False
     json_files = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
@@ -59,7 +62,7 @@ def create_csv_from_json_files() -> list[list[str]]:
     if not json_exist():
         return []
 
-    csv_folder = "CSVs"
+    csv_folder = CSV_FOLDER
     json_files :list[str] = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
 
     all_data = {}
@@ -143,8 +146,9 @@ def create_flask_app():
 
             last_month = get_last_month()
             csv_filename = f"cost_allocation_for_{calendar.month_name[last_month].lower()}.csv"
-            csv_path = os.path.join("CSVs", csv_filename)
-            
+            os.makedirs(CSV_FOLDER, exist_ok=True)
+            csv_path = os.path.join(CSV_FOLDER, csv_filename)
+
             with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
                 for row in csv_data:
