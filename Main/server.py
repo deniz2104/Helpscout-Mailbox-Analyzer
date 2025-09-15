@@ -49,6 +49,8 @@ def credentials_exist(data: dict) -> bool:
 def json_exist() -> bool:
     """Check if the required JSON files exist in the CSVs directory to make the final CSV."""
     csv_folder = "CSVs"
+    if not os.path.exists(csv_folder):
+        return False
     json_files = [f for f in os.listdir(csv_folder) if f.endswith('.json')]
     return len(json_files) == 3
 
@@ -127,6 +129,11 @@ def create_flask_app():
     @app.route("/dashboard")
     def dashboard():
         return render_template("dashboard.html")
+
+    @app.route("/check_json_files")
+    def check_json_files():
+        """Check if JSON files exist and return status."""
+        return {"json_files_exist": json_exist()}
 
     @app.route("/export")
     def export_data():

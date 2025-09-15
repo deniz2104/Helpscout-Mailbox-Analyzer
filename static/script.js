@@ -14,16 +14,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const exportBtn = document.getElementById("exportBtn");
     if (exportBtn) {
+        fetch("/check_json_files")
+            .then(response => response.json())
+            .then(data => {
+                if (!data.json_files_exist) {
+                    exportBtn.textContent = "Run main file first then come back";
+                    exportBtn.disabled = true;
+                    exportBtn.style.backgroundColor = "#6c757d";
+                    exportBtn.style.cursor = "not-allowed";
+                }
+            })
+            .catch(error => {
+                console.error('Error checking JSON files:', error);
+                exportBtn.textContent = "Run main file first then come back";
+                exportBtn.disabled = true;
+                exportBtn.style.backgroundColor = "#6c757d";
+                exportBtn.style.cursor = "not-allowed";
+            });
+
         exportBtn.addEventListener("click", function() {
-            exportBtn.textContent = "Exporting...";
-            exportBtn.disabled = true;
-            
-            window.location.href = "/export";
-            
-            setTimeout(function() {
-                exportBtn.textContent = "Export Data into a CSV";
-                exportBtn.disabled = false;
-            }, 1000);
+            if (!exportBtn.disabled) {
+                exportBtn.textContent = "Exporting...";
+                exportBtn.disabled = true;
+                
+                window.location.href = "/export";
+                
+                setTimeout(function() {
+                    exportBtn.textContent = "Export Data into a CSV";
+                    exportBtn.disabled = false;
+                }, 1000);
+            }
         });
     }
 });
