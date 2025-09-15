@@ -9,7 +9,6 @@ from CredentialsAndJsonManager.config_loader import load_config
 from HelperFiles.helper_file_to_get_last_month import get_last_month
 
 DATA_FILE = "config.json"
-config = load_config()
 
 def load_data() -> dict:
     """Load configuration data from config.json, creating it with default values if it doesn't exist."""
@@ -78,6 +77,7 @@ def create_csv_from_json_files() -> list[list[str]]:
             else:
                 all_data[category] = team_data.copy()
 
+    config=load_config()
     sorted_team_members :list[str] = sorted(list(config.get("TEAM_MEMBERS", {}).values()))
 
     csv_data = []
@@ -97,8 +97,11 @@ def create_csv_from_json_files() -> list[list[str]]:
     return csv_data
 
 
-def create_flask_app():    
-    app = Flask(__name__)
+def create_flask_app():
+    base_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    templates_dir = os.path.join(base_directory, "templates")
+    static_dir = os.path.join(base_directory, "static")
+    app = Flask(__name__, template_folder=templates_dir, static_folder=static_dir, static_url_path='/static')
     app.secret_key = "supersecret"
     
     @app.route("/", methods=["GET", "POST"])
