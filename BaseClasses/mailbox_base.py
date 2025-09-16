@@ -73,11 +73,11 @@ class MailboxBase(ABC):
             latest_conv_date = self.get_creation_date(conversations[0]['id'])
             earliest_conv_date = self.get_creation_date(conversations[-1]['id'])
 
-            if latest_conv_date and latest_conv_date > end_date:
+            if latest_conv_date and earliest_conv_date and latest_conv_date > end_date and earliest_conv_date > end_date:
                 page += 1
                 continue
-            
-            if earliest_conv_date and earliest_conv_date < start_date:
+
+            if latest_conv_date and latest_conv_date < start_date:
                 break
             
             """ Process conversations within the date range """

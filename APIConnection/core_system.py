@@ -11,7 +11,8 @@ class CoreSystem:
     """
     _last_request_time = 0
     _request_lock = Lock()
-    _min_request_interval = 0.01
+    _min_request_interval = 0.001
+    _session = requests.Session()
     
     def __init__(self, client_id: str, client_secret: str):
         self.client_id :str = client_id
@@ -35,7 +36,7 @@ class CoreSystem:
             
             CoreSystem._last_request_time = time.time()
 
-    def make_request(self, endpoint: str, params: Optional[dict] = None, max_retries: int = 3) -> Optional[dict]:
+    def make_request(self, endpoint: str, params: Optional[dict] = None, max_retries: int = 6) -> Optional[dict]:
         """Makes a GET request to the specified API endpoint with retries and rate limiting."""
         if not self.token_manager.ensure_valid_token():
             print("ERROR: Failed to get valid token")
@@ -53,18 +54,18 @@ class CoreSystem:
             self._rate_limit()
             
             try:
-                response = requests.get(url, headers=headers, params=params, timeout=30)
+                response = CoreSystem._session.get(url, headers=headers, params=params, timeout=30)
                 
                 if response.status_code == 200:
                     return response.json()
                 elif response.status_code == 429:
-                    wait_time = 0.7 + (attempt * 0.2) + random.uniform(0, 0.3)
+                    wait_time = 0.7 + (attempt * 0.2) + random.uniform(0.5, 0.8)
                     print(f"Rate limited, waiting {wait_time:.1f}s before retry {attempt + 1}/{max_retries}")
                     time.sleep(wait_time)
                     continue
                 elif response.status_code in [500, 502, 503, 504]:
                     if attempt < max_retries:
-                        wait_time = 0.7 + (attempt * 0.2) + random.uniform(0, 0.3)
+                        wait_time = 0.7 + (attempt * 0.2) + random.uniform(0.5, 0.8)
                         print(f"Server error {response.status_code}, retrying in {wait_time:.1f}s")
                         time.sleep(wait_time)
                         continue
@@ -77,7 +78,7 @@ class CoreSystem:
                     
             except requests.exceptions.RequestException as e:
                 if attempt < max_retries:
-                    wait_time = 0.7 + (attempt * 0.2) + random.uniform(0, 0.3)
+                    wait_time = 0.7 + (attempt * 0.2) + random.uniform(0.5, 0.8)
                     print(f"Request failed: {e}, retrying in {wait_time:.1f}s")
                     time.sleep(wait_time)
                     continue

@@ -61,6 +61,7 @@ class ConversationTagBase(ABC):
             """ Check if the thread is a customer reply and the reply is in specified date range """
             created_by = thread.get("createdBy", {})
             created_at = thread.get("createdAt", "")
+            type_of_thread = thread.get("type", "")
             if not created_at:
                 continue
 
@@ -74,7 +75,7 @@ class ConversationTagBase(ABC):
                 continue
 
             """ Check if the thread was created by a team member """
-            if created_by.get("type") == "user" and created_by.get("id", 0) > 1:
+            if created_by.get("type") == "user" and created_by.get("id", 0) > 1 and type_of_thread == "message":
                 full_name = f"{created_by.get('first', '')} {created_by.get('last', '')}".strip()
                 if full_name in self.team_members:
                     category = self._get_category(product_or_plugin)

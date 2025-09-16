@@ -62,7 +62,7 @@ class BaseConversations(ABC):
             ]
 
         """ Use ThreadPoolExecutor to process conversations concurrently """
-        with ThreadPoolExecutor(max_workers=8) as executor:
+        with ThreadPoolExecutor(max_workers=20) as executor:
             results = executor.map(process_single_conversation, conversation_ids)
 
         extracted_usernames = (u for conv_users in results for u in conv_users)
