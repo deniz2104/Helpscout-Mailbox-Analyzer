@@ -5,10 +5,8 @@ async def run_single_command(cmd: str):
     """Run a single shell command asynchronously and log its execution time."""
     start_time = time.time()
     
-    # We remove stdout=... and stderr=... to let the subprocess print directly to the console.
     process = await asyncio.create_subprocess_shell(cmd)
     
-    # We wait for the process to complete, but we don't capture its output.
     return_code = await process.wait()
 
     execution_time = time.time() - start_time
@@ -21,9 +19,7 @@ async def run_command_group(group_name: str, commands: list[str]):
     """Run a group of commands asynchronously and log the total execution time."""
     start_time = time.time()
 
-    # We use a list comprehension to create tasks
     tasks = [asyncio.create_task(run_single_command(cmd)) for cmd in commands]
-    # We wait for all tasks to complete
     await asyncio.gather(*tasks, return_exceptions=True)
 
     total_time = time.time() - start_time
@@ -34,7 +30,6 @@ async def run_with_staged_execution():
     overall_start = time.time()
 
     print("\nStarting Stage 1 - Initial Processing...")
-    # The output from these scripts will now appear in real-time
     await run_command_group("Stage 1 - Initial Processing", [
         "python HelpscoutMailboxes/helpscout_free_mailbox.py",
         "python HelpscoutMailboxes/helpscout_free_mailbox_tags.py"
@@ -43,7 +38,6 @@ async def run_with_staged_execution():
     print("\n🔄 Starting Stage 2 - Pro and Optimole Mailbox Operations...")
     
     async def pro_chain():
-        # The output from these scripts will now appear in real-time
         await run_single_command("python HelpscoutMailboxes/helpscout_pro_mailbox.py")
         await run_single_command("python ProcessMailboxes/process_pro_conversations.py")
 
