@@ -12,6 +12,7 @@ class BaseConversations(ABC):
         self.client_secret : str = client_secret
         self.core_system_helper = CoreSystem(client_id, client_secret)
         self.dict_of_usernames : dict[str, str] = {}
+        self.max_workers : int = 30
 
     @property
     @abstractmethod
@@ -62,7 +63,7 @@ class BaseConversations(ABC):
             ]
 
         """ Use ThreadPoolExecutor to process conversations concurrently """
-        with ThreadPoolExecutor(max_workers=20) as executor:
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             results = executor.map(process_single_conversation, conversation_ids)
 
         extracted_usernames = (u for conv_users in results for u in conv_users)

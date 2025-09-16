@@ -71,7 +71,9 @@ class ConversationTagBase(ABC):
                 print(f"Error parsing date {created_at}: {e}")
                 continue
 
-            if not (self.start_date < thread_date < self.end_date):
+            is_in_range = self.start_date < thread_date < self.end_date
+            
+            if not is_in_range:
                 continue
 
             """ Check if the thread was created by a team member """
@@ -84,7 +86,7 @@ class ConversationTagBase(ABC):
                         dictionary_of_tags_and_names[category] = {}
                     """ Initialize the count for the full name if not already present """
                     if full_name not in dictionary_of_tags_and_names[category]:
-                        dictionary_of_tags_and_names[category][full_name] = 1
+                        dictionary_of_tags_and_names[category][full_name] = 0
                     dictionary_of_tags_and_names[category][full_name] += 1
 
     @abstractmethod
