@@ -5,8 +5,6 @@ import webbrowser
 import calendar
 from threading import Timer
 from flask import Flask, render_template, request, redirect, url_for, send_file
-from CredentialsAndJsonManager.config_loader import load_config
-from HelperFiles.helper_file_to_get_last_month import get_last_month
 
 DATA_FILE = "config.json"
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -82,7 +80,8 @@ def create_csv_from_json_files() -> list[list[str]]:
             else:
                 all_data[category] = team_data.copy()
 
-    config=load_config()
+    from CredentialsAndJsonManager.config_loader import load_config
+    config = load_config()
     sorted_team_members :list[str] = sorted(list(config.get("TEAM_MEMBERS", {}).values()))
 
     csv_data = []
@@ -144,6 +143,7 @@ def create_flask_app():
         try:
             csv_data = create_csv_from_json_files()
 
+            from HelperFiles.helper_file_to_get_last_month import get_last_month
             last_month = get_last_month()
             csv_filename = f"cost_allocation_for_{calendar.month_name[last_month].lower()}.csv"
             os.makedirs(CSV_FOLDER, exist_ok=True)
