@@ -355,17 +355,6 @@ Extrage și mapează automat conversațiile din forumul WordPress.org către mem
 
 ---
 
-## 🚀 Performance
-
-### Optimizări
-
-- Connection pooling pentru API requests
-- Thread pooling pentru procesare paralelă
-- Batch processing pentru database operations
-- CSV streaming pentru memory efficiency
-
----
-
 ## 🛠️ Tech Stack
 
 ### Backend
