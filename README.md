@@ -376,8 +376,8 @@ Extrage și mapează automat conversațiile din forumul WordPress.org către mem
 - **Asyncio** - Async pipeline orchestration
 
 ### Frontend
-- **HTML5** - Markup
-- **CSS3** - Styling cu gradients și animations
+- **HTML5**
+- **CSS3**
 - **JavaScript** - Client-side logic
 
 ### Architecture
@@ -414,16 +414,8 @@ Flask==3.1.2
 
 ---
 
-### Idei
-- WebSocket pentru real-time progress updates
-- Machine learning pentru categorizare automată
-- Integrare cu Slack pentru notificări
-- Multi-tenant support pentru multiple organizații
-
----
-
 ## 📄 Licență
 
-Acest proiect este proprietate privată. Toate drepturile rezervate.
+Toate drepturile rezervate.
 
 ---
